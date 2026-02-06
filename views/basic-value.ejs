@@ -5,7 +5,7 @@
     <div class="card border-0" style="width: 100%; max-width: 500px">
       <div class="card-body">
         <h1 class="text-center mb-4" style="font-weight: bold">
-          บันทีกค่าพื้นฐาน
+          บันทึกค่าพื้นฐาน
         </h1>
 
         <div class="row">
@@ -36,11 +36,9 @@
 
         <div class="row">
           <div class="col">
-            <label for="inputAddress" class="form-label"> </label>
-            <select class="form-select" aria-label="Default select example">
+            <label for="basicValueVariableSelect" class="form-label"> </label>
+            <select class="form-select" id="basicValueVariableSelect" aria-label="เลือกค่าที่บันทึก">
               <option selected>เลือกค่าที่บันทึก</option>
-              <option value="1">จำนวนผู้ป่วยนอกที่รับบริการทั้งหมด</option>
-              <option value="2">จำนวนผู้ป่วยในที่รับบริการทั้งหมด</option>
             </select>
           </div>
           <div class="col">
@@ -71,7 +69,7 @@
             <tr>
               <th>เดือน</th>
               <th>ปี</th>
-              <th>ค่าที่บันทึก</th>
+              <th>ชื่อตัวแปร</th>
               <th>ค่าที่บันทึก</th>
               <th></th>
             </tr>
@@ -185,12 +183,12 @@
           if (result.status === "success") {
             const years = result.years;
             const yearSelect = document.getElementById("yearSelect");
-            
+
             // ล้างตัวเลือกเดิม (ยกเว้นตัวเลือกแรก)
             while (yearSelect.options.length > 1) {
               yearSelect.remove(1);
             }
-            
+
             // เพิ่มตัวเลือกปีจากข้อมูลที่ได้จาก API
             years.forEach(yearData => {
               const option = document.createElement("option");
@@ -198,9 +196,11 @@
               option.textContent = yearData.year;
               yearSelect.appendChild(option);
             });
-            
+
             // เรียกใช้ฟังก์ชันดึงข้อมูลค่าพื้นฐาน
             getBasicValueData();
+            // โหลดรายการตัวแปรพื้นฐานไปใส่ใน select
+            getBasicValueVariableDropdown();
           }
         })
         .catch((error) => {
@@ -208,7 +208,45 @@
         });
     }
 
-    // ฟังก์ชันดึงข้อมูลค่าพื้นฐานจาก API
+    // ฟังก์ชันดึงรายการ "ตัวแปรพื้นฐาน" ไปใส่ใน select
+    function getBasicValueVariableDropdown() {
+      const selectEl = document.getElementById("basicValueVariableSelect");
+      if (!selectEl) return;
+
+      axios
+        .get("/api/basic-value-variable/get-basic-value-variable-report")
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            const basicValueVariables = result.basicValueVariables || [];
+
+            // ล้าง option เดิม ยกเว้นตัวแรก
+            while (selectEl.options.length > 1) {
+              selectEl.remove(1);
+            }
+
+            basicValueVariables.forEach((item) => {
+              const isActive =
+                item?.status === true ||
+                item?.status === "true" ||
+                item?.status === 1;
+
+              // แสดงเฉพาะตัวแปรพื้นฐานที่เปิดใช้งาน
+              if (!isActive) return;
+
+              const option = document.createElement("option");
+              option.value = item._id; // เก็บอ้างอิงด้วย _id
+              option.textContent = item.name || item.name_eng || "";
+              selectEl.appendChild(option);
+            });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    // ฟังก์ชันดึงข้อมูลค่าพื้นฐานจาก API (ตารางด้านล่าง)
     function getBasicValueData() {
       axios
         .get("/api/basic-value/get-basic-value-report")
@@ -222,7 +260,7 @@
               documentsTable.draw(); // Redraw the empty table
               return;
             }
-            
+
             basicValues.forEach((value) => {
               documentsTable.row.add([
                 getMonthName(value.month),
@@ -239,7 +277,7 @@
                 </center>`
               ]);
             });
-            
+
             documentsTable.draw(); // Redraw the table
           }
         })
@@ -247,7 +285,7 @@
           console.log(error);
         });
     }
-    
+
     // ฟังก์ชันแปลงเลขเดือนเป็นชื่อเดือน
     function getMonthName(monthNumber) {
       const months = [
@@ -311,6 +349,7 @@
               }
 
               getYearDropdown(); // เรียกใช้ฟังก์ชันโหลดข้อมูลปี
+              getBasicValueVariableDropdown(); // โหลดรายการตัวแปรพื้นฐานสำหรับ select
             }
           })
           .catch((error) => {
@@ -515,6 +554,6 @@
       window.location.href = link;
     }
   </script>
-</body>
+  </body>
 
-</html>
+  </html>

@@ -91,6 +91,10 @@ app.get("/basic-value", (req, res) => {
   res.render("basic-value");
 });
 
+app.get("/basic-value-variable", (req, res) => {
+  res.render("basic-value-variable");
+});
+
 app.get("/agency", (req, res) => {
   res.render("agency");
 });
@@ -115,6 +119,7 @@ require("./routes/user.route")(app);
 require("./routes/work-group.route")(app);
 require("./routes/agency.route")(app);
 require("./routes/value.route")(app);
+require("./routes/basic-value-variable.route")(app);
 require("./routes/indicators.route")(app);
 require("./routes/year.route")(app);
 require("./routes/group.route")(app);
