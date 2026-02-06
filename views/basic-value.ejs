@@ -11,7 +11,7 @@
         <div class="row">
           <div class="col">
 
-            <select class="form-select" aria-label="Default select example">
+            <select class="form-select" id="monthSelect" aria-label="Default select example">
               <option selected>เลือกเดือน</option>
               <option value="1">(1) มกราคม </option>
               <option value="2">(2) กุมภาพันธ์</option>
@@ -42,10 +42,8 @@
             </select>
           </div>
           <div class="col">
-            <label for="inputAddress" class="form-label"> </label>
-            <input type="text" class="form-control" id="value" placeholder="กรุณากรอกค่า"
-              onkeypress="return isNumberKey(event)" oninput="sanitizeAndValidate(this)"
-              onkeydown="handleKeyPress(event)" />
+            <label for="value" class="form-label"> </label>
+            <input type="text" class="form-control" id="value" placeholder="กรุณากรอกค่า" />
           </div>
         </div>
         <div class="text-center mt-3">
@@ -95,9 +93,6 @@
 
     // เริ่มต้น DataTable หลังจากที่เอกสาร HTML โหลดเสร็จสมบูรณ์
     $(document).ready(function () {
-      // console.log("jQuery loaded:", typeof $ !== "undefined");
-      // console.log("DataTable loaded:", typeof $.fn.DataTable !== "undefined");
-
       // เพิ่มตัวเลือกปีลงใน dropdown
       getYearDropdown();
 
@@ -161,8 +156,9 @@
               previous: "ก่อนหน้า",
             },
           },
+          autoWidth: false,
           responsive: true,
-          order: [[6, "desc"]],
+          order: [[0, "asc"]],
         });
 
         console.log("DataTable initialized successfully");
@@ -192,7 +188,7 @@
             // เพิ่มตัวเลือกปีจากข้อมูลที่ได้จาก API
             years.forEach(yearData => {
               const option = document.createElement("option");
-              option.value = yearData._id;
+              option.value = yearData.year;
               option.textContent = yearData.year;
               yearSelect.appendChild(option);
             });
@@ -264,8 +260,10 @@
             basicValues.forEach((value) => {
               documentsTable.row.add([
                 getMonthName(value.month),
-                value.year_name,
-                value.value_name,
+                value.year,
+                value.basic_value_variable_name_eng ||
+                value.basic_value_variable_name ||
+                "",
                 value.value,
                 `<center>
                   <button class="btn btn-warning btn-sm" onclick="editBasicValue('${value._id}')">
@@ -434,53 +432,65 @@
     }
 
     function handleCheckCondition() {
-      const inputValue = document.getElementById("documentNumber").value;
-      const isValid = /^\d{9}$/.test(inputValue); // ต้องเป็นตัวเลข 9 หลักเท่านั้น
-      toggleError(isValid);
+      const basicValueVariableSelect = document.getElementById("basicValueVariableSelect");
+      const valueInput = document.getElementById("value");
+      const errorMessage = document.getElementById("error-message");
 
-      if (isValid) {
-        createDocument(); // เรียกใช้ได้เฉพาะเมื่อถูกต้อง
+      if (!basicValueVariableSelect.value || !valueInput.value) {
+        errorMessage.innerText = "กรุณาเลือกตัวแปรและกรอกค่า";
+        errorMessage.style.display = "block";
+        return;
       }
+
+      createBasicValue();
     }
 
-    function handleKeyPress(event) {
-      if (event.key === "Enter") {
-        const inputValue = document.getElementById("documentNumber").value;
-        const isValid = /^\d{9}$/.test(inputValue); // ต้องเป็นตัวเลข 9 หลักเท่านั้น
-        toggleError(isValid);
+    function createBasicValue() {
+      const basicValueVariableSelect = document.getElementById("basicValueVariableSelect");
+      const valueInput = document.getElementById("value");
+      const yearSelect = document.getElementById("yearSelect");
+      const monthSelect = document.getElementById("monthSelect");
+      const errorMessage = document.getElementById("error-message");
 
-        if (isValid) {
-          createDocument(); // เรียกใช้ได้เฉพาะเมื่อถูกต้อง
-        }
-      }
-    }
+      const selectedOption =
+        basicValueVariableSelect.options[basicValueVariableSelect.selectedIndex];
 
-    function toggleError(isValid) {
-      const error = document.getElementById("error");
-      error.style.display = isValid ? "none" : "block";
-    }
+      const payload = {
+        basic_value_variable_name: basicValueVariableSelect.value,
+        basic_value_variable_name_eng: selectedOption
+          ? selectedOption.textContent
+          : "",
+        value: valueInput.value,
+        year: yearSelect.value,
+        month: monthSelect.value,
+      };
 
-    function translateStep(step) {
-      switch (step) {
-        case "step-1":
-          return "Ward ส่ง ห้องบัตร";
-        case "step-2":
-          return "ห้องบัตร ส่ง แพทย์เจ้าของไข้";
-        case "step-3":
-          return "ห้องบัตร รับจาก แพทย์เจ้าของไข้";
-        case "step-4":
-          return "ห้องบัตร รับจาก พญ.นราพร";
-        case "step-5":
-          return "เวชระเบียน รับจาก ห้องบัตร";
-        case "step-6":
-          return "เวชระเบียน บันทึก รหัส ICD 10";
-        case "step-7":
-          return "เวชระเบียน ส่ง งานประกัน";
-        case "step-8":
-          return "ห้องบัตร รับจาก งานประกัน";
-        default:
-          return step;
-      }
+      console.log(payload);
+      axios
+        .post("/api/basic-value/create-basic-value", payload)
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            Swal.fire({
+              icon: "success",
+              title: "บันทึกค่าพื้นฐานสำเร็จ",
+              showConfirmButton: false,
+              timer: 1500,
+            }).then(() => {
+              // รีเฟรชหน้าเมื่อบันทึกสำเร็จ
+              window.location.reload();
+            });
+          } else {
+            errorMessage.innerText =
+              result.message || "บันทึกค่าพื้นฐานไม่สำเร็จ";
+            errorMessage.style.display = "block";
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          errorMessage.innerText = "บันทึกค่าพื้นฐานไม่สำเร็จ";
+          errorMessage.style.display = "block";
+        });
     }
 
     function getDocumentByDocumentStep() {

@@ -19,29 +19,24 @@ function normalizeObjectId(value) {
   return mongoose.Types.ObjectId.isValid(value) ? value : undefined;
 }
 
-exports.createBasicValueVariable = async (req, res) => {
+exports.createBasicValue = async (req, res) => {
+  const payload = req.body || {};
   try {
-    const payload = req.body || {};
     const newBasicValue = new BasicValue({
-      basic_value_variable_name: normalizeObjectId(
-        payload.basic_value_variable_name
-      ),
-      basic_value_variable_name_eng:
-        payload.basic_value_variable_name_eng ?? null,
-      value: payload.value ?? null,
-      year: payload.year ?? null,
-      month: payload.month ?? null,
+      basic_value_variable_name: payload.basic_value_variable_name,
+      basic_value_variable_name_eng: payload.basic_value_variable_name_eng,
+      value: payload.value,
+      year: payload.year,
+      month: payload.month,
     });
-
     await newBasicValue.save();
-
-    res.status(200).json({
+    return res.status(200).json({
       status: "success",
       basicValue: newBasicValue,
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    return res.status(500).json({
       status: "error",
       message: "เกิดข้อผิดพลาดในการบันทึกข้อมูล",
       error: error.message,

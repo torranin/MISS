@@ -119,6 +119,7 @@ require("./routes/user.route")(app);
 require("./routes/work-group.route")(app);
 require("./routes/agency.route")(app);
 require("./routes/value.route")(app);
+require("./routes/basic-value.route")(app);
 require("./routes/basic-value-variable.route")(app);
 require("./routes/indicators.route")(app);
 require("./routes/year.route")(app);
