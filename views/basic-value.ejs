@@ -1,0 +1,520 @@
+<%- include('partials/header') %>
+
+  <!-- Start เครื่องมือสร้างเอกสาร -->
+  <div class="container d-flex align-items-center justify-content-center mt-5">
+    <div class="card border-0" style="width: 100%; max-width: 500px">
+      <div class="card-body">
+        <h1 class="text-center mb-4" style="font-weight: bold">
+          บันทีกค่าพื้นฐาน
+        </h1>
+
+        <div class="row">
+          <div class="col">
+
+            <select class="form-select" aria-label="Default select example">
+              <option selected>เลือกเดือน</option>
+              <option value="1">(1) มกราคม </option>
+              <option value="2">(2) กุมภาพันธ์</option>
+              <option value="3">(3) มีนาคม</option>
+              <option value="4">(4) เมษายน</option>
+              <option value="5">(5) พฤษภาคม</option>
+              <option value="6">(6) มิถุนายน</option>
+              <option value="7">(7) กรกฎาคม</option>
+              <option value="8">(8) สิงหาคม</option>
+              <option value="9">(9) กันยายน</option>
+              <option value="10">(10) ตุลาคม</option>
+              <option value="11">(11) พฤศจิกายน</option>
+              <option value="12">(12) ธันวาคม</option>
+            </select>
+          </div>
+          <div class="col">
+            <select class="form-select" id="yearSelect" aria-label="Default select example">
+              <option selected>เลือกปี</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <label for="inputAddress" class="form-label"> </label>
+            <select class="form-select" aria-label="Default select example">
+              <option selected>เลือกค่าที่บันทึก</option>
+              <option value="1">จำนวนผู้ป่วยนอกที่รับบริการทั้งหมด</option>
+              <option value="2">จำนวนผู้ป่วยในที่รับบริการทั้งหมด</option>
+            </select>
+          </div>
+          <div class="col">
+            <label for="inputAddress" class="form-label"> </label>
+            <input type="text" class="form-control" id="value" placeholder="กรุณากรอกค่า"
+              onkeypress="return isNumberKey(event)" oninput="sanitizeAndValidate(this)"
+              onkeydown="handleKeyPress(event)" />
+          </div>
+        </div>
+        <div class="text-center mt-3">
+          <button type="submit" class="btn btn-primary mb-3" onclick="handleCheckCondition()">
+            บันทึกค่า
+          </button>
+        </div>
+        <div id="error-message" class="text-danger text-center mt-2" style="display: none"></div>
+      </div>
+    </div>
+  </div>
+  <!-- End เครื่องมือสร้างเอกสาร -->
+
+  <!-- Start ตารางข้อมูลเอกสาร -->
+  <div class="container mt-5">
+    <div class="card border-0" style="width: 100%">
+      <div class="card-body">
+        <h3 class="mb-4" style="font-weight: bold">ตารางข้อมูลที่บันทึก</h3>
+        <table class="table" id="basic-value-table">
+          <thead>
+            <tr>
+              <th>เดือน</th>
+              <th>ปี</th>
+              <th>ค่าที่บันทึก</th>
+              <th>ค่าที่บันทึก</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- End ตารางข้อมูลเอกสาร -->
+
+  <!-- เรียกใช้ JavaScript libraries ตามลำดับ -->
+  <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    // สร้างตัวแปรสำหรับเก็บ DataTable
+    let documentsTable;
+
+    // เริ่มต้น DataTable หลังจากที่เอกสาร HTML โหลดเสร็จสมบูรณ์
+    $(document).ready(function () {
+      // console.log("jQuery loaded:", typeof $ !== "undefined");
+      // console.log("DataTable loaded:", typeof $.fn.DataTable !== "undefined");
+
+      // เพิ่มตัวเลือกปีลงใน dropdown
+      getYearDropdown();
+
+      // กำหนด active class ให้กับปุ่มที่ตรงกับ path
+      const currentPath = window.location.pathname.split("/")[2];
+      if (currentPath) {
+        const menuItem = document.getElementById(
+          decodeURIComponent(currentPath)
+        );
+        if (menuItem) {
+          menuItem.classList.add("active");
+        }
+      }
+
+      // กำหนด active สำหรับเมนูด้านบน
+      const fullPath = window.location.pathname;
+      if (fullPath.includes("/dashboard")) {
+        document
+          .getElementById("dashboard")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("dashboard")
+          .classList.remove("btn-primary-outline");
+      } else if (fullPath.includes("/indicators")) {
+        document
+          .getElementById("indicators")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("indicators")
+          .classList.remove("btn-primary-outline");
+      } else if (fullPath.includes("/add-indicators")) {
+        document
+          .getElementById("add-indicators")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("add-indicators")
+          .classList.remove("btn-primary-outline");
+      } else if (fullPath.includes("/basic-value")) {
+        document
+          .getElementById("Set up")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("Set up")
+          .classList.remove("btn-primary-outline");
+      }
+
+      try {
+        // เริ่มต้น DataTable
+        documentsTable = $("#basic-value-table").DataTable({
+          // กำหนดการตั้งค่า DataTable ที่นี่
+          language: {
+            search: "ค้นหา:",
+            lengthMenu: "แสดง _MENU_ รายการ",
+            info: "แสดง _START_ ถึง _END_ จาก _TOTAL_ รายการ",
+            infoEmpty: "แสดง 0 ถึง 0 จาก 0 รายการ",
+            infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
+            paginate: {
+              first: "หน้าแรก",
+              last: "หน้าสุดท้าย",
+              next: "ถัดไป",
+              previous: "ก่อนหน้า",
+            },
+          },
+          responsive: true,
+          order: [[6, "desc"]],
+        });
+
+        console.log("DataTable initialized successfully");
+      } catch (error) {
+        console.error("Failed to initialize DataTable:", error);
+      }
+
+      // Check Token and Load Function
+      getToken();
+    });
+
+    // ฟังก์ชันเพิ่มตัวเลือกปีลงใน dropdown
+    function getYearDropdown() {
+      axios
+        .get("/api/year/get-year-report")
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            const years = result.years;
+            const yearSelect = document.getElementById("yearSelect");
+            
+            // ล้างตัวเลือกเดิม (ยกเว้นตัวเลือกแรก)
+            while (yearSelect.options.length > 1) {
+              yearSelect.remove(1);
+            }
+            
+            // เพิ่มตัวเลือกปีจากข้อมูลที่ได้จาก API
+            years.forEach(yearData => {
+              const option = document.createElement("option");
+              option.value = yearData._id;
+              option.textContent = yearData.year;
+              yearSelect.appendChild(option);
+            });
+            
+            // เรียกใช้ฟังก์ชันดึงข้อมูลค่าพื้นฐาน
+            getBasicValueData();
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    // ฟังก์ชันดึงข้อมูลค่าพื้นฐานจาก API
+    function getBasicValueData() {
+      axios
+        .get("/api/basic-value/get-basic-value-report")
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success" && documentsTable) {
+            const basicValues = result.basicValues;
+            documentsTable.clear(); // Clear existing data
+
+            if (basicValues.length === 0) {
+              documentsTable.draw(); // Redraw the empty table
+              return;
+            }
+            
+            basicValues.forEach((value) => {
+              documentsTable.row.add([
+                getMonthName(value.month),
+                value.year_name,
+                value.value_name,
+                value.value,
+                `<center>
+                  <button class="btn btn-warning btn-sm" onclick="editBasicValue('${value._id}')">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteBasicValue('${value._id}')">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </center>`
+              ]);
+            });
+            
+            documentsTable.draw(); // Redraw the table
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+    
+    // ฟังก์ชันแปลงเลขเดือนเป็นชื่อเดือน
+    function getMonthName(monthNumber) {
+      const months = [
+        "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+        "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+      ];
+      return months[parseInt(monthNumber) - 1] || "";
+    }
+
+    function validateLength(input) {
+      const error = document.getElementById("error");
+      if (input.value.length === 9) {
+        error.style.display = "none";
+      } else {
+        error.style.display = "block";
+      }
+    }
+
+    // Start Check if token is valid
+    function getToken() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/";
+      } else {
+        axios
+          .post("/api/auth/verify-user-by-token", {
+            token: token,
+          })
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              localStorage.setItem("userInfo", JSON.stringify(result.user));
+
+              // ตรวจสอบ job_position ของผู้ใช้
+              const userInfo = result.user;
+              if (userInfo.job_position === "ward") {
+                document.getElementById("ward-menu-item").style.display =
+                  "block";
+              } else if (userInfo.job_position === "card") {
+                // แสดงทุกรายการที่มี class="card-menu-item"
+                const cardMenuItems =
+                  document.querySelectorAll(".card-menu-item");
+                cardMenuItems.forEach((item) => {
+                  item.style.display = "block";
+                });
+              } else if (userInfo.job_position === "record") {
+                // แสดงทุกรายการที่มี class="record-menu-item"
+                const recordMenuItems =
+                  document.querySelectorAll(".record-menu-item");
+                recordMenuItems.forEach((item) => {
+                  item.style.display = "block";
+                });
+              } else if (userInfo.job_position === "admin") {
+                // แสดงทุกรายการสำหรับผู้ใช้ admin
+                const allMenuItems = document.querySelectorAll(
+                  "#ward-menu-item, .card-menu-item, .record-menu-item"
+                );
+                allMenuItems.forEach((item) => {
+                  item.style.display = "block";
+                });
+              }
+
+              getYearDropdown(); // เรียกใช้ฟังก์ชันโหลดข้อมูลปี
+            }
+          })
+          .catch((error) => {
+            window.location.href = "/";
+          });
+      }
+    }
+    // End Check if token is valid
+
+    function logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userInfo");
+      window.location.href = "/";
+    }
+
+    function clearForm() {
+      document.getElementById("documentNumber").value = "";
+      document.getElementById("error-message").style.display = "none";
+      document.getElementById("error-message").innerText = "";
+    }
+
+    function createDocument() {
+      const user_id = JSON.parse(localStorage.getItem("userInfo"))._id;
+      const document_step = window.location.pathname.split("/")[2];
+
+      // ลบช่องว่างออกจากหมายเลขเอกสาร
+      const documentNumber = document
+        .getElementById("documentNumber")
+        .value.trim();
+      const errorMessage = document.getElementById("error-message");
+
+      errorMessage.style.display = "none";
+      errorMessage.innerText = "";
+
+      // ตรวจสอบว่าหมายเลขเอกสารถูกกรอกหรือไม่
+      if (!documentNumber) {
+        errorMessage.innerText = "กรุณากรอกหมาย AN";
+        errorMessage.style.display = "block";
+        return;
+      }
+
+      const payload = {
+        user_id: user_id,
+        document_number: documentNumber,
+        document_step: document_step,
+      };
+
+      axios
+        .post("/api/document/create-document", payload)
+        .then((response) => {
+          if (response.data.status === "success") {
+            Swal.fire({
+              position: "center",
+              icon: "success",
+              title: "เอกสารถูกสร้างเรียบร้อย",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+
+            clearForm();
+            getDocumentByDocumentStep(); // โหลดเอกสารใหม่หลังจากสร้างเอกสารสำเร็จ
+          } else {
+            errorMessage.innerText = response.data.message;
+            errorMessage.style.display = "block";
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          errorMessage.innerText = "หมายเลข AN นี้มีอยู่ในระบบแล้ว";
+          errorMessage.style.display = "block";
+        });
+    }
+
+    function isNumberKey(evt) {
+      const charCode = evt.which ? evt.which : evt.keyCode;
+      return charCode >= 48 && charCode <= 57;
+    }
+
+    function sanitizeAndValidate(input) {
+      input.value = input.value.replace(/[^0-9]/g, "").slice(0, 9);
+      toggleError(input.value.length === 9);
+    }
+
+    function handleCheckCondition() {
+      const inputValue = document.getElementById("documentNumber").value;
+      const isValid = /^\d{9}$/.test(inputValue); // ต้องเป็นตัวเลข 9 หลักเท่านั้น
+      toggleError(isValid);
+
+      if (isValid) {
+        createDocument(); // เรียกใช้ได้เฉพาะเมื่อถูกต้อง
+      }
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === "Enter") {
+        const inputValue = document.getElementById("documentNumber").value;
+        const isValid = /^\d{9}$/.test(inputValue); // ต้องเป็นตัวเลข 9 หลักเท่านั้น
+        toggleError(isValid);
+
+        if (isValid) {
+          createDocument(); // เรียกใช้ได้เฉพาะเมื่อถูกต้อง
+        }
+      }
+    }
+
+    function toggleError(isValid) {
+      const error = document.getElementById("error");
+      error.style.display = isValid ? "none" : "block";
+    }
+
+    function translateStep(step) {
+      switch (step) {
+        case "step-1":
+          return "Ward ส่ง ห้องบัตร";
+        case "step-2":
+          return "ห้องบัตร ส่ง แพทย์เจ้าของไข้";
+        case "step-3":
+          return "ห้องบัตร รับจาก แพทย์เจ้าของไข้";
+        case "step-4":
+          return "ห้องบัตร รับจาก พญ.นราพร";
+        case "step-5":
+          return "เวชระเบียน รับจาก ห้องบัตร";
+        case "step-6":
+          return "เวชระเบียน บันทึก รหัส ICD 10";
+        case "step-7":
+          return "เวชระเบียน ส่ง งานประกัน";
+        case "step-8":
+          return "ห้องบัตร รับจาก งานประกัน";
+        default:
+          return step;
+      }
+    }
+
+    function getDocumentByDocumentStep() {
+      axios
+        .get("/api/document/get-document-report")
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success" && documentsTable) {
+            const documents = result.documents;
+            documentsTable.clear(); // Clear existing data
+
+            if (documents.length === 0) {
+              documentsTable.draw();
+              return;
+            }
+            documents.forEach((doc) => {
+              // หาขั้นตอนล่าสุดจาก timeline
+              const timelines = (doc.document_timeline || []).sort(
+                (a, b) => new Date(b.created_at) - new Date(a.created_at)
+              );
+              const latest = timelines[0] || {};
+              const stepDesc = translateStep(latest.document_step);
+              const operator = latest.fullname || "";
+              const actionDate = latest.created_at;
+              documentsTable.row.add([
+                doc.document_number,
+                doc.hn,
+                `<div style="white-space: nowrap; width: 135px; overflow: hidden;text-overflow: ellipsis; solid #000000;"> ${doc.name || doc.fullname || ""
+                } </div>`,
+                formatShortDate(doc.reg_date),
+                formatShortDate(doc.dch_date),
+                `<div style="white-space: nowrap; width: 120px; overflow: hidden;text-overflow: ellipsis; solid #000000;"> ${doc.dch_doctor || ""
+                } </div>`,
+                `<div class="d-flex justify-content-center">${stepDesc}</div>`,
+                formatShortDate(actionDate),
+              ]);
+            });
+            documentsTable.draw();
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    function formatDate(date) {
+      const d = new Date(date);
+      const datePart = d.toLocaleDateString("th-TH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      const timePart = d.toLocaleTimeString("th-TH", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+      return `${datePart} `;
+    }
+    function formatShortDate(date) {
+      const d = new Date(date);
+      const datePart = d.toLocaleDateString("th-TH", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      return `${datePart} `;
+    }
+
+    function redirectToLink(link) {
+      window.location.href = link;
+    }
+  </script>
+</body>
+
+</html>

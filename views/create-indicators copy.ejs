@@ -1,0 +1,906 @@
+<%- include('partials/header') %>
+
+  <!-- Start เมนูสร้างเอกสาร -->
+  <div class="container-fluid mt-5">
+    <h1 class="text-center mb-4" style="font-weight: bold">
+      กำหนดตัวชี้วัด
+    </h1>
+
+    <!-- เพิ่มช่องค้นหาเอกสารด้วยหมายเลขเอกสาร -->
+    <div class="row mb-4">
+      <div class="col-md-4 offset-md-4">
+        <center><button type="button" class="btn btn-primary" data-bs-toggle="modal"
+            data-bs-target="#createIndicatorsModal">
+            สร้างตัวชี้วัด
+          </button></center>
+        <br>
+        <div class="input-group">
+          <input type="text" class="form-control" id="search-indicators" placeholder="ค้นหาตัวชี้วัด"
+            aria-label="ค้นหาตัวชี้วัด" />
+          <button class="btn btn-primary" type="button" id="search-button">
+            <i class="fa-solid fa-search"></i> ค้นหา
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="indicators-report" class="indicators-list"></div>
+  </div>
+
+
+  <!-- Start Modal สร้างตัวชี้วัด -->
+  <div class="modal fade" id="createIndicatorsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="createIndicatorsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="createIndicatorsModalLabel">
+            <span id="modalTitle">สร้างตัวชี้วัด</span>
+          </h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+            id="closeModalBtn"></button>
+        </div>
+        <div class="modal-body">
+
+          <div class="container">
+            <div class="form-group row mb-3">
+              <div class="col">
+                <label for="group_type" class="form-label" style="font-weight: bold">กลุ่มตัวชี้วัด</label>
+                <select class="form-control" id="group_type">
+                  <option value="">เลือกกลุ่มตัวชี้วัด</option>
+                  <option value="ตัวชี้วัดนโยบาย">ตัวชี้วัดนโยบาย</option>
+                  <option value="ตัวชี้วัดองค์กร">ตัวชี้วัดองค์กร</option>
+                  <option value="ตัวชี้วัดระบบงานสำคัญ">ตัวชี้วัดระบบงานสำคัญ</option>
+                  <option value="ตัวชี้วัดหน่วยงาน">ตัวชี้วัดหน่วยงาน</option>
+                  <option value="ตัวชี้วัด THIP">ตัวชี้วัด THIP</option>
+                </select>
+              </div>
+              <div class="col">
+                <label for="indicators_code" class="form-label" style="font-weight: bold">รหัสตัวชี้วัด</label>
+                <input type="text" class="form-control" id="indicators_code" placeholder="กรุณากรอกรหัสตัวชี้วัด" />
+              </div>
+            </div>
+            <div class="form-group row mb-3">
+              <div class="col">
+                <label for="indicators_name" class="form-label" style="font-weight: bold">ชื่อตัวชี้วัด</label>
+                <input type="text" class="form-control" id="indicators_name" placeholder="กรุณากรอกชื่อตัวชี้วัด" />
+              </div>
+              <div class="col">
+                <label for="year" class="form-label" style="font-weight: bold">เลือกปี</label>
+                <select class="form-select" aria-label="Default select example" id="year">
+                  <option selected value="null">กรุณาเลือกปี</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row mb-3">
+              <div class="col">
+                <label for="indicators_description" class="form-label" style="font-weight: bold">ข้อมูลที่ต้องการ
+                  (ตัวตั้ง,
+                  ตัวหาร)</label>
+                <textarea class="form-control" id="indicators_description" placeholder="กรุณากรอกคำอธิบาย"
+                  rows="3"></textarea>
+              </div>
+            </div>
+            <div class="form-group row mb-3">
+              <div class="col">
+                <label for="variable_name" class="form-label" style="font-weight: bold">ชื่อตัวตั้ง</label>
+                <input type="text" class="form-control" id="variable_name" placeholder="กรุณากรอกตัวตั้ง" />
+              </div>
+              <div class="col">
+                <label for="divisor_name" class="form-label" style="font-weight: bold">ชื่อตัวหาร</label>
+                <input type="text" class="form-control" id="divisor_name" placeholder="กรุณากรอกตัวหาร" />
+              </div>
+            </div>
+            <div class="form-group row mb-3">
+              <div class="col">
+                <label for="indicators_description" class="form-label" style="font-weight: bold">นิยาม /คำอธิบาย</label>
+                <textarea class="form-control" id="indicators_description" placeholder="กรุณากรอกคำอธิบาย"
+                  rows="3"></textarea>
+              </div>
+            </div>
+
+
+
+          </div>
+
+
+
+
+
+
+
+
+
+
+          <!-- <div class="form-group mb-3">
+            <label for="group_type" class="form-label" style="font-weight: bold">กลุ่มตัวชี้วัด</label>
+            <select class="form-control" id="group_type">
+              <option value="">เลือกกลุ่มตัวชี้วัด</option>
+              <option value="ตัวชี้วัดนโยบาย">ตัวชี้วัดนโยบาย</option>
+              <option value="ตัวชี้วัดองค์กร">ตัวชี้วัดองค์กร</option>
+              <option value="ตัวชี้วัดระบบงานสำคัญ">ตัวชี้วัดระบบงานสำคัญ</option>
+              <option value="ตัวชี้วัดหน่วยงาน">ตัวชี้วัดหน่วยงาน</option>
+              <option value="ตัวชี้วัด THIP">ตัวชี้วัด THIP</option>
+            </select>
+          </div> -->
+          <!-- <div class="form-group mb-3">
+            <label for="indicators_code" class="form-label" style="font-weight: bold">รหัสตัวชี้วัด</label>
+            <input type="text" class="form-control" id="indicators_code" placeholder="กรุณากรอกรหัสตัวชี้วัด" />
+          </div> -->
+          <!-- <div class="form-group mb-3">
+            <label for="indicators_name" class="form-label" style="font-weight: bold">ชื่อตัวชี้วัด</label>
+            <input type="text" class="form-control" id="indicators_name" placeholder="กรุณากรอกชื่อตัวชี้วัด" />
+          </div> -->
+          <div class="form-group mb-3" id="group_container">
+            <label for="group" class="form-label" style="font-weight: bold">เลือกหน่วยงาน/กลุ่มงาน</label>
+            <select class="form-select" aria-label="Default select example" id="group">
+              <option selected value="null">กรุณาเลือกหน่วยงาน/กลุ่มงาน</option>
+            </select>
+          </div>
+          <div class="form-group mb-3">
+            <label for="indicators_description" class="form-label" style="font-weight: bold">นิยาม /คำอธิบาย</label>
+            <textarea class="form-control" id="indicators_description" placeholder="กรุณากรอกคำอธิบาย"
+              rows="3"></textarea>
+          </div>
+
+
+          <div class="form-group mb-3">
+            <label for="indicators_description" class="form-label"
+              style="font-weight: bold">วัตถุประสงค์ของการมีตัวชี้วัดนี้</label>
+            <textarea class="form-control" id="indicators_description" placeholder="กรุณากรอกคำอธิบาย"
+              rows="3"></textarea>
+          </div>
+          <div class="form-group mb-3">
+            <label for="indicators_description" class="form-label" style="font-weight: bold">ข้อมูลที่ต้องการ (ตัวตั้ง,
+              ตัวหาร)</label>
+            <textarea class="form-control" id="indicators_description" placeholder="กรุณากรอกคำอธิบาย"
+              rows="3"></textarea>
+          </div>
+          <div class="form-group mb-3">
+            <label for="indicators_description" class="form-label" style="font-weight: bold">วิธีการแปลผล</label>
+            <textarea class="form-control" id="indicators_description" placeholder="กรุณากรอกคำอธิบาย"
+              rows="3"></textarea>
+          </div>
+          <div class="form-group mb-3">
+            <label for="indicators_description" class="form-label" style="font-weight: bold">ที่มาของตัวชี้วัด /
+              Reference</label>
+            <textarea class="form-control" id="indicators_description" placeholder="กรุณากรอกคำอธิบาย"
+              rows="3"></textarea>
+          </div>
+          <div class="form-group mb-3">
+            <label for="indicators_description" class="form-label" style="font-weight: bold">วันเดือนปี
+              ที่เริ่มใช้ตัวชี้วัด</label>
+            <textarea class="form-control" id="indicators_description" placeholder="กรุณากรอกคำอธิบาย"
+              rows="3"></textarea>
+          </div>
+          <div class="form-group mb-3">
+            <label for="indicators_description" class="form-label"
+              style="font-weight: bold">สูตรในการคำนวณตัวชี้วัด</label>
+            <textarea class="form-control" id="indicators_description" placeholder="กรุณากรอกคำอธิบาย"
+              rows="3"></textarea>
+          </div>
+          <div class="form-group mb-3">
+            <label for="indicators_description" class="form-label"
+              style="font-weight: bold">หน่วยวัดของตัวชี้วัด</label>
+            <textarea class="form-control" id="indicators_description" placeholder="กรุณากรอกคำอธิบาย"
+              rows="3"></textarea>
+          </div>
+          <div class="form-group mb-3">
+            <label for="indicators_description" class="form-label" style="font-weight: bold">ประเภทตัวชี้วัด</label>
+            <textarea class="form-control" id="indicators_description" placeholder="กรุณากรอกคำอธิบาย"
+              rows="3"></textarea>
+          </div>
+
+
+          <div class="form-group mb-3" id="year_container">
+            <label for="year" class="form-label" style="font-weight: bold">เลือกปี</label>
+            <select class="form-select" aria-label="Default select example" id="year">
+              <option selected value="null">กรุณาเลือกปี</option>
+            </select>
+          </div>
+          <div class="form-group mb-3">
+            <label for="time_period" class="form-label" style="font-weight: bold">ความถี่ในการจัดทำข้อมูล</label>
+            <input type="radio" class="form-check-input" id="time_period_shift" name="time_period" value="shift">
+            <label class="form-check-label" for="time_period_shift">รายเวร &nbsp;</label>
+            <input type="radio" class="form-check-input" id="time_period_day" name="time_period" value="day">
+            <label class="form-check-label" for="time_period_day">รายวัน &nbsp;</label>
+            <input type="radio" class="form-check-input" id="time_period_month" name="time_period" value="month"
+              checked>
+            <label class="form-check-label" for="time_period_month">รายเดือน</label>
+          </div>
+          <div class="form-group mb-3">
+            <label for="variable_name" class="form-label" style="font-weight: bold">ชื่อตัวตั้ง</label>
+            <input type="text" class="form-control" id="variable_name" placeholder="กรุณากรอกตัวตั้ง" />
+          </div>
+          <div class="form-group mb-3">
+            <label for="divisor_name" class="form-label" style="font-weight: bold">ชื่อตัวหาร</label>
+            <input type="text" class="form-control" id="divisor_name" placeholder="กรุณากรอกตัวหาร" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="createIndicators()">
+            สร้างตัวชี้วัด
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelBtn">
+            ยกเลิก
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Modal สร้างตัวชี้วัด -->
+
+  <!-- Start Modal แก้ไขตัวชี้วัด -->
+  <div class="modal fade" id="editIndicatorsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="editIndicatorsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="editIndicatorsModalLabel">
+            <span id="editModalTitle">แก้ไขตัวชี้วัด</span>
+          </h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+            id="closeEditModalBtn"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="edit_indicator_id">
+          <div class="form-group mb-3">
+            <label for="edit_indicators_name" class="form-label" style="font-weight: bold">ชื่อตัวชี้วัด</label>
+            <input type="text" class="form-control" id="edit_indicators_name" placeholder="กรุณากรอกชื่อตัวชี้วัด" />
+          </div>
+          <div class="form-group mb-3">
+            <label for="edit_indicators_description" class="form-label" style="font-weight: bold">คำอธิบาย</label>
+            <input type="text" class="form-control" id="edit_indicators_description" placeholder="กรุณากรอกคำอธิบาย" />
+          </div>
+          <div class="form-group mb-3">
+            <label for="edit_aws" class="form-label" style="font-weight: bold">เลือกหน่วยงาน/กลุ่มงาน</label>
+            <input type="radio" class="form-check-input" id="edit_agency_radio" name="edit_aws" value="agency">
+            <label class="form-check-label" for="edit_agency_radio">หน่วยงาน</label>
+            <input type="radio" class="form-check-input" id="edit_work_group_radio" name="edit_aws" value="work_group">
+            <label class="form-check-label" for="edit_work_group_radio">กลุ่มงาน</label>
+          </div>
+          <div class="form-group mb-3" id="edit_agency_container">
+            <label for="edit_agency" class="form-label" style="font-weight: bold">หน่วยงาน</label>
+            <select class="form-select" aria-label="Default select example" id="edit_agency">
+              <option selected value="null">กรุณาเลือกหน่วยงาน</option>
+              <!-- ตัวเลือกจะถูกเพิ่มโดย JavaScript -->
+            </select>
+          </div>
+          <div class="form-group mb-3" id="edit_work_group_container">
+            <label for="edit_work_group" class="form-label" style="font-weight: bold">กลุ่มงาน</label>
+            <select class="form-select" aria-label="Default select example" id="edit_work_group">
+              <option selected value="null">กรุณาเลือกกลุ่มงาน</option>
+            </select>
+          </div>
+          <div class="form-group mb-3">
+            <label for="edit_status" class="form-label" style="font-weight: bold">สถานะ</label>
+            <select class="form-select" id="edit_status">
+              <option value="true">เปิดใช้งาน</option>
+              <option value="false">ปิดใช้งาน</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="updateIndicator()">
+            บันทึกการแก้ไข
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelEditBtn">
+            ยกเลิก
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Modal แก้ไขตัวชี้วัด -->
+
+  <!-- เรียกใช้ JavaScript libraries ตามลำดับ -->
+  <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    $(document).ready(function () {
+      // Check Token and Load Function
+      getToken();
+
+      // โหลดข้อมูลหน่วยงานเมื่อเปิดหน้า
+      loadGroupOptions();
+      loadYearOptions();
+
+      // โหลดข้อมูลตัวชี้วัด
+      getIndicatorsReport();
+
+
+      // แก้ไขปัญหา aria-hidden
+      const modal = document.getElementById('createIndicatorsModal');
+
+      // ใช้ MutationObserver เพื่อตรวจจับการเปลี่ยนแปลงของ aria-hidden
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
+            // ถ้า modal มี aria-hidden="true" และมี element ที่มี focus อยู่ภายใน
+            if (modal.getAttribute('aria-hidden') === 'true' && modal.contains(document.activeElement)) {
+              // ย้าย focus ออกไปที่ปุ่มเปิด modal
+              document.querySelector('button[data-bs-target="#createIndicatorsModal"]').focus();
+            }
+          }
+        });
+      });
+
+      // เริ่มการสังเกตการณ์
+      observer.observe(modal, { attributes: true });
+
+      // จัดการ focus เมื่อ modal ถูกปิด
+      $('#createIndicatorsModal').on('hidden.bs.modal', function () {
+        // ย้าย focus ไปที่ปุ่มสร้างตัวชี้วัดหลังจากปิด modal
+        $('button[data-bs-target="#createIndicatorsModal"]').focus();
+      });
+
+      // จัดการ focus เมื่อ modal ถูกเปิด
+      $('#createIndicatorsModal').on('shown.bs.modal', function () {
+        // ย้าย focus ไปที่ช่องกรอกชื่อตัวชี้วัด
+        $('#indicators_name').focus();
+      });
+
+      // ปรับปรุงการจัดการ keydown event
+      $('#createIndicatorsModal').on('keydown', function (e) {
+        // ถ้ากด Escape
+        if (e.key === 'Escape') {
+          $('#createIndicatorsModal').modal('hide');
+          return;
+        }
+
+        const focusableElements = $(this).find('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        // ถ้ากด Tab และเป็นองค์ประกอบสุดท้าย
+        if (e.key === 'Tab' && !e.shiftKey && document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement.focus();
+        }
+        // ถ้ากด Shift+Tab และเป็นองค์ประกอบแรก
+        else if (e.key === 'Tab' && e.shiftKey && document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement.focus();
+        }
+      });
+
+      // กำหนด active สำหรับเมนูด้านบน
+      const fullPath = window.location.pathname;
+      if (fullPath.includes("/dashboard")) {
+        document
+          .getElementById("dashboard")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("dashboard")
+          .classList.remove("btn-primary-outline");
+      } else if (fullPath.includes("/create-indicators")) {
+        document
+          .getElementById("Set up")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("Set up")
+          .classList.remove("btn-primary-outline");
+      }
+
+      // เพิ่ม Event Listener สำหรับการค้นหา
+      $("#search-button").click(function () {
+        searchIndicators();
+      });
+
+      // เพิ่ม Event Listener สำหรับการกด Enter ในช่องค้นหา
+      $("#search-indicators").keypress(function (e) {
+        if (e.which === 13) {
+          searchIndicators();
+        }
+      });
+    });
+
+    // โหลดข้อมูลผู้รับผิดชอบมาแสดงใน select
+    function loadGroupOptions() {
+      axios
+        .get("/api/group/get-group-report")
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            const groups = result.groups;
+            const groupSelect = document.getElementById("group");
+
+            // เคลียร์ตัวเลือกเดิมยกเว้นตัวแรก
+            while (groupSelect.options.length > 1) {
+              groupSelect.remove(1);
+            }
+
+            // เรียงข้อมูลตาม group_type
+            const sortedGroups = groups.sort((a, b) => {
+              if (a.group_type < b.group_type) return -1;
+              if (a.group_type > b.group_type) return 1;
+              return 0;
+            });
+
+            // เพิ่มตัวเลือกใหม่จากข้อมูลที่ได้
+            sortedGroups.forEach(group => {
+              if (group.group_status === true) { // แสดงเฉพาะหน่วยงานที่เปิดใช้งาน
+                const option = document.createElement("option");
+                option.value = group._id;
+                option.text = group.group_name + " (" + group.group_type + ")";
+                groupSelect.appendChild(option);
+              }
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("ไม่สามารถโหลดข้อมูลผู้รับผิดชอบได้:", error);
+        });
+    }
+
+    // โหลดข้อมูลปีมาแสดงใน select
+    function loadYearOptions() {
+      axios
+        .get("/api/year/get-year-report")
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            const years = result.years;
+            const yearSelect = document.getElementById("year");
+
+            // เคลียร์ตัวเลือกเดิมยกเว้นตัวแรก
+            while (yearSelect.options.length > 1) {
+              yearSelect.remove(1);
+            }
+
+            // เพิ่มตัวเลือกใหม่จากข้อมูลที่ได้
+            years.forEach(year => {
+              if (year.year_status === true) { // แสดงเฉพาะหน่วยงานที่เปิดใช้งาน
+                const option = document.createElement("option");
+                option.value = year.year;
+                option.text = year.year;
+                yearSelect.appendChild(option);
+              }
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("ไม่สามารถโหลดข้อมูลปีได้:", error);
+        });
+    }
+
+
+    // Start Check if token is valid
+    function getToken() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/";
+        return;
+      }
+
+      axios
+        .post("/api/auth/verify-user-by-token", {
+          token: token,
+        })
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            localStorage.setItem("userInfo", JSON.stringify(result.user));
+          } else {
+            window.location.href = "/";
+          }
+        })
+        .catch((error) => {
+          console.error("Token verification error:", error);
+          window.location.href = "/";
+        });
+    }
+    // End Check if token is valid
+
+    function logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userInfo");
+      window.location.href = "/";
+    }
+
+    function getIndicatorsReport() {
+      axios
+        .get("/api/indicators/get-indicators-report")
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            const indicators = result.indicators;
+            displayIndicators(indicators);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            title: "เกิดข้อผิดพลาด",
+            text: "ไม่สามารถโหลดข้อมูลตัวชี้วัดได้",
+            confirmButtonText: "ตกลง",
+          });
+        });
+    }
+
+    function displayIndicators(indicators) {
+      if (!indicators || indicators.length === 0) {
+        document.getElementById("indicators-report").innerHTML = `
+            <div class="alert alert-info text-center" role="alert">
+              ไม่พบข้อมูลตัวชี้วัด
+            </div>
+          `;
+        return;
+      }
+
+      let reportHTML = "";
+
+      indicators.forEach((indicator) => {
+        // กำหนดสถานะ
+        const statusText = indicator.indicators_status ?
+          '<span class="badge bg-success">เปิดใช้งาน</span>' :
+          '<span class="badge bg-danger">ปิดใช้งาน</span>';
+
+        reportHTML += `
+          <div class="document-card mb-3 p-3 border">
+              <div class="card-body p-0">
+                  <div class="row">
+                      <div class="col-md-12 document-header">
+                          <h5 class="card-title" style="font-weight: bold;">${indicator.indicators_name} ${statusText}</h5>
+                      </div>
+                      
+                      <div class="col-md-12">
+                          <div class="row mt-2">
+                              <div class="col-md-4">
+                                  <strong>หน่วยงาน/กลุ่มงาน:</strong> 
+                                  ${indicator.aws === 'agency' ? 'หน่วยงาน' + (indicator.aws_name || '-') : 'กลุ่มงาน' + (indicator.aws_name || '-')
+          }
+                              </div>
+                          </div>
+                          <div class="row mt-2">
+                              <div class="col-md-8">
+                                  <strong>คำอธิบาย:</strong> ${indicator.indicators_description || '-'}
+                              </div>
+                          </div>
+                          <div class="row mt-2">
+                              <div class="col-md-12 text-end">
+                                  <button class="btn btn-warning btn-sm me-2" onclick="editIndicator('${indicator._id}')">
+                                      <i class="fa-solid fa-edit"></i> แก้ไข
+                                  </button>
+                                  <button class="btn btn-danger btn-sm" onclick="deleteIndicator('${indicator._id}')">
+                                      <i class="fa-solid fa-trash"></i> ลบ
+                                  </button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          `;
+      });
+
+      document.getElementById("indicators-report").innerHTML = reportHTML;
+    }
+
+    // เพิ่มฟังก์ชันสำหรับลบตัวชี้วัด (ยังไม่ได้ทำ API)
+    function deleteIndicator(id) {
+      axios.post(`/api/indicators/delete-indicator/${id}`)
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            Swal.fire({
+              icon: "success",
+              title: "ลบสำเร็จ",
+              text: "ตัวชี้วัดถูกลบเรียบร้อยแล้ว",
+              confirmButtonText: "ตกลง"
+            });
+            getIndicatorsReport();
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            title: "เกิดข้อผิดพลาด",
+            text: "ไม่สามารถลบตัวชี้วัดได้",
+            confirmButtonText: "ตกลง"
+          });
+        });
+    }
+
+    // เพิ่มฟังก์ชันสำหรับแก้ไขตัวชี้วัด
+    function editIndicator(id) {
+      // ดึงข้อมูลตัวชี้วัดจาก API
+      axios.get(`/api/indicators/get-indicator-by-id/${id}`)
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            const indicator = result.indicator;
+
+            // เติมข้อมูลลงในฟอร์ม
+
+            document.getElementById("edit_indicator_id").value = indicator._id;
+            document.getElementById("edit_indicators_code").value = indicator.indicators_code;
+            document.getElementById("edit_indicators_name").value = indicator.indicators_name;
+            document.getElementById("edit_indicators_description").value = indicator.indicators_description || '';
+            document.getElementById("edit_year").value = indicator.year;
+            document.getElementById("edit_group").value = indicator.group_id;
+            document.getElementById("edit_variable_name").value = indicator.variable_name;
+            document.getElementById("edit_divisor_name").value = indicator.divisor_name;
+            document.getElementById("edit_status").value = indicator.indicators_status.toString();
+
+            // ตั้งค่าสถานะ
+            document.getElementById("edit_status").value = indicator.indicators_status.toString();
+
+            // แสดง modal
+            $("#editIndicatorsModal").modal("show");
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            title: "ไม่สามารถดึงข้อมูลตัวชี้วัดได้",
+            text: error.response?.data?.message || "กรุณาลองใหม่อีกครั้ง",
+          });
+        });
+    }
+    // End เพิ่มฟังก์ชันสำหรับแก้ไขตัวชี้วัด
+
+    function searchIndicators() {
+      const searchTerm = $("#search-indicators").val().trim();
+
+      if (searchTerm === "") {
+        // ถ้าช่องค้นหาว่างให้โหลดตัวชี้วัดทั้งหมด
+        getIndicatorsReport();
+        return;
+      }
+
+      axios
+        .get("/api/indicators/get-indicators-report")
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            const indicators = result.indicators;
+            // กรองตัวชี้วัดตามชื่อที่ค้นหา
+            const filteredIndicators = indicators.filter(
+              (indicator) =>
+                indicator.indicators_name
+                  .toLowerCase()
+                  .includes(searchTerm.toLowerCase()) ||
+                (indicator.indicators_description &&
+                  indicator.indicators_description
+                    .toLowerCase()
+                    .includes(searchTerm.toLowerCase()))
+            );
+
+            if (filteredIndicators.length === 0) {
+              Swal.fire({
+                icon: "info",
+                title: "ไม่พบตัวชี้วัด",
+                text: `ไม่พบตัวชี้วัดที่มีชื่อหรือคำอธิบายเกี่ยวกับ "${searchTerm}"`,
+                confirmButtonText: "ตกลง",
+              });
+              displayIndicators(indicators); // แสดงทั้งหมดถ้าไม่เจอ
+            } else {
+              displayIndicators(filteredIndicators);
+            }
+          }
+        })
+        .catch((error) => {
+          // console.log(error);
+          Swal.fire({
+            icon: "error",
+            title: "เกิดข้อผิดพลาด",
+            text: "ไม่สามารถค้นหาตัวชี้วัดได้",
+            confirmButtonText: "ตกลง",
+          });
+        });
+    }
+
+    function createIndicators() {
+      const payload = {
+        indicators_code: document.getElementById("indicators_code").value,
+        indicators_name: document.getElementById("indicators_name").value,
+        indicators_description: document.getElementById("indicators_description").value,
+        year: document.getElementById("year").value,
+        group_id: document.getElementById("group").value,
+        variable_name: document.getElementById("variable_name").value,
+        divisor_name: document.getElementById("divisor_name").value,
+        time_period: document.querySelector('input[name="time_period"]:checked').value,
+        // indicators_status: true,  // กำหนดค่าเริ่มต้นเป็น true
+      };
+
+      console.log(payload);
+
+      // ตรวจสอบข้อมูลที่จำเป็น
+      if (!payload.indicators_code) {
+        Swal.fire({
+          icon: "warning",
+          title: "กรุณากรอกรหัสตัวชี้วัด",
+          showConfirmButton: true
+        });
+        return;
+      }
+      // ตรวจสอบข้อมูลที่จำเป็น
+      if (!payload.indicators_name) {
+        Swal.fire({
+          icon: "warning",
+          title: "กรุณากรอกชื่อตัวชี้วัด",
+          showConfirmButton: true
+        });
+        return;
+      }
+
+      // ตรวจสอบว่าเลือกหน่วยงานหรือกลุ่มงานแล้ว
+      if (payload.group_id === "null" || !payload.group_id) {
+        Swal.fire({
+          icon: "warning",
+          title: "กรุณาเลือกผู้รับผิดชอบ",
+          showConfirmButton: true
+        });
+        return;
+      } else if (payload.year === "null" || !payload.year) {
+        Swal.fire({
+          icon: "warning",
+          title: "กรุณาเลือกปี",
+          showConfirmButton: true
+        });
+        return;
+      }
+
+      // console.log("ข้อมูลที่จะส่ง:", payload);
+
+      axios
+        .post("/api/indicators/create-indicators", payload)
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            Swal.fire({
+              icon: "success",
+              title: "สร้างตัวชี้วัดสำเร็จ",
+              text: result.message || "",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+
+            // ปิด modal
+            $("#createIndicatorsModal").modal("hide");
+            // ล้างฟอร์ม
+            clearForm();
+            // โหลดข้อมูลใหม่
+            getIndicatorsReport();
+          }
+        })
+        .catch((error) => {
+          console.log("Error creating indicators:", error);
+
+          // แสดงข้อความแจ้งเตือน
+          Swal.fire({
+            icon: "error",
+            title: "สร้างตัวชี้วัดไม่สำเร็จ",
+            text: error.response?.data?.message || "กรุณาตรวจสอบข้อมูลและลองใหม่อีกครั้ง",
+            showConfirmButton: true
+          }).then(() => {
+            // โหลดข้อมูลใหม่เพื่อตรวจสอบว่าข้อมูลถูกบันทึกหรือไม่
+            getIndicatorsReport();
+          });
+        });
+    }
+
+    function redirectToLink(link) {
+      window.location.href = link;
+    }
+
+    function clearForm() {
+      document.getElementById("indicators_name").value = "";
+      document.getElementById("indicators_description").value = "";
+      document.getElementById("indicators_code").value = "";
+      document.getElementById("year").value = "";
+      document.getElementById("group").value = "";
+      document.getElementById("variable_name").value = "";
+      document.getElementById("divisor_name").value = "";
+      document.getElementById("time_period").value = "";
+
+      // รีเซ็ต radio button
+      $('input[name="aws"]').prop('checked', false);
+
+      // ซ่อน container
+      $("#agency_container").hide();
+      $("#work_group_container").hide();
+    }
+
+    // เพิ่ม event listener สำหรับ edit radio buttons
+    $(document).ready(function () {
+      $('input[name="edit_aws"]').change(function () {
+        if ($(this).val() === 'agency') {
+          $("#edit_agency_container").show();
+          $("#edit_work_group_container").hide();
+        } else if ($(this).val() === 'work_group') {
+          $("#edit_agency_container").hide();
+          $("#edit_work_group_container").show();
+        }
+      });
+
+      // ซ่อนทั้ง agency และ work_group เมื่อเริ่มต้นในโหมดแก้ไข
+      $("#edit_agency_container").hide();
+      $("#edit_work_group_container").hide();
+
+      // เพิ่ม event listener สำหรับโมดัลแก้ไข
+      $('#editIndicatorsModal').on('shown.bs.modal', function () {
+        $('#edit_indicators_name').focus();
+      });
+    });
+
+    // เพิ่มฟังก์ชันสำหรับอัปเดตตัวชี้วัด
+    function updateIndicator() {
+      const indicatorId = document.getElementById("edit_indicator_id").value;
+      const payload = {
+        indicators_name: document.getElementById("edit_indicators_name").value,
+        indicators_description: document.getElementById("edit_indicators_description").value,
+        indicators_status: document.getElementById("edit_status").value === "true"
+      };
+
+      // ตรวจสอบข้อมูลที่จำเป็น
+      if (!payload.indicators_name) {
+        Swal.fire({
+          icon: "warning",
+          title: "กรุณากรอกชื่อตัวชี้วัด",
+          showConfirmButton: true
+        });
+        return;
+      }
+
+      // ตรวจสอบว่าเลือกหน่วยงานหรือกลุ่มงานแล้ว
+      if (selectedOption === 'agency' && (payload.agency === "null" || !payload.agency)) {
+        Swal.fire({
+          icon: "warning",
+          title: "กรุณาเลือกหน่วยงาน",
+          showConfirmButton: true
+        });
+        return;
+      } else if (selectedOption === 'work_group' && (payload.work_group === "null" || !payload.work_group)) {
+        Swal.fire({
+          icon: "warning",
+          title: "กรุณาเลือกกลุ่มงาน",
+          showConfirmButton: true
+        });
+        return;
+      }
+
+      axios
+        .post(`/api/indicators/update-indicator/${indicatorId}`, payload)
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            Swal.fire({
+              icon: "success",
+              title: "แก้ไขตัวชี้วัดสำเร็จ",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+
+            // ปิด modal
+            $("#editIndicatorsModal").modal("hide");
+            // โหลดข้อมูลใหม่
+            getIndicatorsReport();
+          }
+        })
+        .catch((error) => {
+          console.log("Error updating indicators:", error);
+
+          // แสดงข้อความแจ้งเตือน
+          Swal.fire({
+            icon: "error",
+            title: "แก้ไขตัวชี้วัดไม่สำเร็จ",
+            text: error.response?.data?.message || "กรุณาตรวจสอบข้อมูลและลองใหม่อีกครั้ง",
+            showConfirmButton: true
+          });
+        });
+    }
+
+  </script>
+  </body>
+
+  </html>

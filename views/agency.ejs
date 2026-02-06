@@ -1,0 +1,369 @@
+<%- include('partials/header') %>
+
+  <!-- Start ตารางข้อมูลหน่วยงาน -->
+  <div class="container mt-5">
+    <div class="card border-0" style="width: 100%">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <h3 class="mb-4" style="font-weight: bold">ตารางข้อมูลหน่วยงาน</h3>
+          <div class="d-flex justify-content-end mb-3">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAgencyModal">
+              สร้างหน่วยงาน
+            </button>
+          </div>
+        </div>
+        <br />
+        <table class="table" id="agency-table">
+          <thead>
+            <tr>
+              <th>ชื่อหน่วยงาน</th>
+              <th>คำอธิบาย</th>
+              <th>สถานะ</th>
+              <th style="width: 60px"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- End ตารางข้อมูลหน่วยงาน -->
+
+  <!-- Start Modal สร้างหน่วยงาน -->
+  <div class="modal fade" id="createAgencyModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="createAgencyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="createAgencyModalLabel">
+            <span id="modalTitle">สร้างหน่วยงาน</span>
+          </h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด" tabindex="-1"></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group mb-3">
+            <label for="agency_name" class="form-label" style="font-weight: bold">ชื่อหน่วยงาน</label>
+            <input type="text" class="form-control" id="agency_name" placeholder="" />
+          </div>
+          <div class="form-group mb-3">
+            <label for="agency_description" class="form-label" style="font-weight: bold">กลุ่มงาน</label>
+            <select class="form-select" aria-label="Default select example" id="group">
+              <option selected value="null">กรุณาเลือกกลุ่มงาน</option>
+            </select>
+          </div>
+          <div class="form-group mb-3">
+            <label for="agency_description" class="form-label" style="font-weight: bold">คำอธิบาย</label>
+            <textarea class="form-control" id="agency_description" placeholder=""></textarea>
+          </div>
+          <!-- <div class="form-group mb-3">
+            <label for="status" class="form-label" style="font-weight: bold">สถานะ</label>
+            <input type="text" class="form-control" id="status" placeholder="" />
+          </div> -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="createAgency()">
+            สร้างหน่วยงาน
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            ยกเลิก
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Modal สร้างหน่วยงาน -->
+
+  <!-- Start Modal แก้ไขหน่วยงาน -->
+  <div class="modal fade" id="editAgencyModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="editAgencyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="editAgencyModalLabel">
+            <span id="modalTitle">แก้ไขหน่วยงาน</span>
+          </h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" class="form-control" id="edit-agency-id" />
+          <div class="form-group mb-3">
+            <label for="agency_name" class="form-label" style="font-weight: bold">ชื่อหน่วยงาน</label>
+            <input type="text" class="form-control" id="edit-agency_name" placeholder="กรุณากรอกชื่อหน่วยงาน" />
+          </div>
+          <div class="form-group mb-3">
+            <label for="agency_description" class="form-label" style="font-weight: bold">คำอธิบาย</label>
+            <textarea class="form-control" id="edit-agency_description" placeholder="กรุณากรอกคำอธิบาย"
+              rows="2"></textarea>
+          </div>
+          <div class="form-group mb-3">
+            <div class="form-check form-switch">
+              <label class="form-check-label" for="edit-agency_status"
+                style="font-weight: bold">เปิด/ปิดหน่วยงาน</label>
+              <input class="form-check-input" type="checkbox" role="switch" id="edit-agency_status"
+                ${agency_status===true ? 'checked' : '' }>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="handleConfirmEditAgency()">
+            บันทึกการแก้ไข
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            ยกเลิก
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Modal แก้ไขหน่วยงาน -->
+
+  <!-- เรียกใช้ JavaScript libraries ตามลำดับ -->
+  <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    $(document).ready(function () {
+      getToken();
+
+      const fullPath = window.location.pathname;
+      if (fullPath.includes("/dashboard")) {
+        document
+          .getElementById("dashboard")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("dashboard")
+          .classList.remove("btn-primary-outline");
+      } else if (fullPath.includes("/agency")) {
+        document
+          .getElementById("Set up")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("Set up")
+          .classList.remove("btn-primary-outline");
+      }
+
+      try {
+        agencyTable = $("#agency-table").DataTable({
+          language: {
+            search: "ค้นหา:",
+            lengthMenu: "แสดง _MENU_ รายการ",
+            info: "แสดง _START_ ถึง _END_ จาก _TOTAL_ รายการ",
+            infoEmpty: "แสดง 0 ถึง 0 จาก 0 รายการ",
+            infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
+            paginate: {
+              first: "หน้าแรก",
+              last: "หน้าสุดท้าย",
+              next: "ถัดไป",
+              previous: "ก่อนหน้า",
+            },
+          },
+          responsive: true,
+          order: [[2, "desc"]],
+        });
+
+      } catch (error) {
+        console.error("Failed to initialize DataTable:", error);
+      }
+
+    });
+
+    function getToken() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/";
+      } else {
+        axios
+          .post("/api/auth/verify-user-by-token", {
+            token: token,
+          })
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              localStorage.setItem("userInfo", JSON.stringify(result.user));
+              getAgencyReport();
+            }
+          })
+          .catch((error) => {
+            window.location.href = "/";
+          });
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userInfo");
+      window.location.href = "/";
+    }
+
+    function clearForm() {
+      document.getElementById("agency_name").value = "";
+      document.getElementById("agency_description").value = "";
+    }
+
+    function createAgency() {
+      axios
+        .post("/api/agency/create-agency", {
+          agency_name: document.getElementById("agency_name").value,
+          agency_description: document.getElementById("agency_description").value,
+        })
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            Swal.fire({
+              position: "center",
+              icon: "success",
+              title: "หน่วยงานถูกสร้างเรียบร้อย",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+            getAgencyReport();
+            $("#createAgencyModal").modal("hide");
+            clearForm();
+          } else {
+            Swal.fire({
+              position: "center",
+              icon: "error",
+              title: "หน่วยงานมีอยู่ในระบบแล้ว",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    function getAgencyReport() {
+      axios
+        .get("/api/agency/get-agency-report")
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success" && agencyTable) {
+            const agencies = result.agencies;
+            agencyTable.clear(); // Clear existing data
+
+            if (agencies.length === 0) {
+              agencyTable.draw();
+              return;
+            }
+
+            agencies.forEach((agency) => {
+              agencyTable.row.add([
+                agency.agency_name,
+                agency.agency_description,
+                agency.agency_status === true ? '<span class="badge bg-success">เปิดใช้งาน</span>' : '<span class="badge bg-danger">ปิดใช้งาน</span>',
+                `<center>
+                  <button class="btn btn-warning btn-sm" onclick="onEditAgency('${agency._id}')">
+                    <i class="fa-solid fa-pen-to-square" ></i>
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="handleConfirmDeleteAgency('${agency._id}')">
+                    <i class="fa-solid fa-trash" ></i>
+                  </button>
+                  </center>`,
+              ]);
+            });
+
+            agencyTable.draw();
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    function onEditAgency(agency_id) {
+      axios
+        .get(`/api/agency/get-agency-by-id/${agency_id}`)
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            const agency = result.agency;
+            document.getElementById("edit-agency-id").value = agency._id;
+            document.getElementById("edit-agency_name").value = agency.agency_name;
+            document.getElementById("edit-agency_description").value = agency.agency_description;
+            document.getElementById("edit-agency_status").checked = agency.agency_status;
+            $("#editAgencyModal").modal("show");
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+
+    function handleConfirmEditAgency() {
+      const agency_id = document.getElementById("edit-agency-id").value;
+      const agency_name = document.getElementById("edit-agency_name").value;
+      const agency_description = document.getElementById("edit-agency_description").value;
+      const agency_status = document.getElementById("edit-agency_status").checked;
+
+      axios
+        .post(`/api/agency/update-agency/${agency_id}`, {
+          agency_name: agency_name,
+          agency_description: agency_description,
+          agency_status: agency_status,
+        })
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            Swal.fire({
+              position: "center",
+              icon: "success",
+              title: "ดำเนินการแก้ไขหน่วยงานเรียบร้อย",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+
+            getAgencyReport();
+            $("#editAgencyModal").modal("hide");
+          } else {
+            Swal.fire({
+              position: "center",
+              icon: "error",
+              title: "ดำเนินการแก้ไขหน่วยงานไม่สำเร็จ",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          }
+        });
+    }
+
+    function handleConfirmDeleteAgency(agency_id) {
+      axios
+        .post(`/api/agency/delete-agency/${agency_id}`)
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            Swal.fire({
+              position: "center",
+              icon: "success",
+              title: "ดำเนินการลบหน่วยงานเรียบร้อย",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+
+            getAgencyReport();
+            $("#editAgencyModal").modal("hide");
+          } else {
+            Swal.fire({
+              position: "center",
+              icon: "error",
+              title: "ดำเนินการลบหน่วยงานไม่สำเร็จ",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+          }
+        });
+    }
+
+    function redirectToLink(link) {
+      window.location.href = link;
+    }
+  </script>
+  </body>
+
+  </html>

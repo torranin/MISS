@@ -1,0 +1,467 @@
+<%- include('partials/header') %>
+
+     <!-- Start ตารางข้อมูลกลุ่มงาน -->
+     <div class="container mt-5">
+      <div class="card border-0" style="width: 100%">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-4" style="font-weight: bold">ตารางข้อมูลปี</h3>
+            <div class="d-flex justify-content-end mb-3">
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#createYearModal"
+              >
+                สร้างปี
+              </button>
+            </div>
+          </div>
+          <br />
+          <table class="table" id="year-table">
+            <thead>
+              <tr>
+                <th>ปี</th>
+                <th>สถานะ</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- End ตารางข้อมูลปี -->
+
+    <!-- Start Modal สร้างปี -->
+    <div
+      class="modal fade"
+      id="createYearModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="createYearModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="createYearModalLabel">
+              <span id="modalTitle">สร้างปี</span>
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="ปิด"
+              tabindex="-1"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group mb-3">
+              <label
+                for="year"
+                class="form-label"
+                style="font-weight: bold"
+                >ปี</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="year"
+                placeholder=""
+              />
+            </div>
+            
+            <!-- <div class="form-group mb-3">
+            <label for="status" class="form-label" style="font-weight: bold">สถานะ</label>
+            <input type="text" class="form-control" id="status" placeholder="" />
+          </div> -->
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="createYear()"
+            >
+              สร้างปี
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              ยกเลิก
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Modal สร้างปี -->
+
+    <!-- เพิ่ม modal แก้ไขปี -->
+    <div
+      class="modal fade"
+      id="editYearModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="editYearModalLabel"
+      aria-hidden="true"
+    >
+
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="editYearModalLabel">
+              <span id="editModalTitle">แก้ไขปี</span>
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="ปิด"
+              tabindex="-1"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="_id" />
+            <div class="form-group mb-3">
+              <label
+                for="edit_year"
+                class="form-label"
+                style="font-weight: bold"
+                >ปี</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="edit_year"
+                placeholder=""
+              />
+            </div>
+            <div class="form-group mb-3">
+              <div class="form-check form-switch">
+                <label class="form-check-label" for="edit-year_status" style="font-weight: bold">เปิด/ปิดปี</label>
+                <input class="form-check-input" type="checkbox" role="switch" id="edit-year_status" ${year_status === true ? 'checked' : ''}>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="updateYear()"
+            >
+              บันทึกการแก้ไข
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              ยกเลิก
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Modal แก้ไขปี -->
+
+    <!-- เรียกใช้ JavaScript libraries ตามลำดับ -->
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      $(document).ready(function () {
+        // Check Token and Load Function
+        getToken();
+
+        // กำหนด active สำหรับเมนูด้านบน
+        const fullPath = window.location.pathname;
+        if (fullPath.includes("/dashboard")) {
+          document
+            .getElementById("dashboard")
+            .classList.add("active", "btn-primary");
+          document
+            .getElementById("dashboard")
+            .classList.remove("btn-primary-outline");
+        } else if (fullPath.includes("/agency")) {
+          document
+            .getElementById("Set up")
+            .classList.add("active", "btn-primary");
+          document
+            .getElementById("Set up")
+            .classList.remove("btn-primary-outline");
+        }
+
+        try {
+          // เริ่มต้น DataTable
+          yearTable = $("#year-table").DataTable({
+            language: {
+              search: "ค้นหา:",
+              lengthMenu: "แสดง _MENU_ รายการ",
+              info: "แสดง _START_ ถึง _END_ จาก _TOTAL_ รายการ",
+              infoEmpty: "แสดง 0 ถึง 0 จาก 0 รายการ",
+              infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
+              paginate: {
+                first: "หน้าแรก",
+                last: "หน้าสุดท้าย",
+                next: "ถัดไป",
+                previous: "ก่อนหน้า",
+              },
+            },
+            responsive: true,
+            order: [[0, "desc"]],
+            columns: [
+              { data: "year" },
+              { data: "actions" },
+            ],
+          });
+
+          // console.log("DataTable initialized successfully");
+        } catch (error) {
+          console.error("Failed to initialize DataTable:", error);
+        }
+        // เพิ่ม Event Listener สำหรับการค้นหา
+        $("#search-button").click(function () {
+          searchYear();
+        });
+
+        // เพิ่ม Event Listener สำหรับการกด Enter ในช่องค้นหา
+        $("#search-year").keypress(function (e) {
+          if (e.which === 13) {
+            searchYear();
+          }
+        });
+      });
+
+      // Start Check if token is valid
+      function getToken() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/";
+        } else {
+          axios
+            .post("/api/auth/verify-user-by-token", {
+              token: token,
+            })
+            .then((response) => {
+              const result = response.data;
+              if (result.status === "success") {
+                localStorage.setItem("userInfo", JSON.stringify(result.user));
+                getYearReport(); // เรียกใช้ฟังก์ชันโหลดปี
+              }
+            })
+            .catch((error) => {
+              window.location.href = "/";
+            });
+        }
+      }
+      // End Check if token is valid
+
+      function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userInfo");
+        window.location.href = "/";
+      }
+
+      function getYearReport() {
+        axios
+          .get("/api/year/get-year-report")
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              const years = result.years;
+              displayYear(years);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      function createYear() {
+        const payload = {
+          year: document.getElementById("year").value,
+        };
+
+        axios
+          .post("/api/year/create-year", payload)
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              Swal.fire({
+                icon: "success",
+                title: "สร้างปีสำเร็จ",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+
+              // ปิด modal
+              $("#createYearModal").modal("hide");
+              // ล้างฟอร์ม
+              clearForm();
+              // โหลดข้อมูลใหม่
+              getYearReport();
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            Swal.fire({
+              icon: "error",
+              title: "สร้างปีไม่สำเร็จ",
+            });
+          });
+      }
+
+      function clearForm() {
+        document.getElementById("year").value = "";
+      }
+
+      function redirectToLink(link) {
+        window.location.href = link;
+      }
+
+      // Start Display Year
+      function displayYear(year) {
+        yearTable.clear();
+        yearTable.rows.add(year);
+        yearTable.draw();
+      }
+      // End Display Year
+
+      // Start Display Year
+      function displayYear(years) {
+        yearTable.clear();
+        years.forEach(year => {
+          year.year_status,
+          year.actions = `
+          <center>
+          <button class="btn btn-warning btn-sm" onclick="editYearModal('${year._id}')">
+            <i class="fa-solid fa-pen-to-square" ></i>
+          </button>
+        
+          <button class="btn btn-danger btn-sm" onclick="deleteYear('${year._id}')">
+            <i class="fas fa-trash"></i>
+          </button>
+          </center>
+        `;
+        });
+        yearTable.rows.add(years);
+        yearTable.draw();
+      }
+      // End Display Year
+
+      // Start Edit Year
+      function editYearModal(yearId) {
+        console.log("Editing year with ID:", yearId);
+        axios.get(`/api/year/get-year-by-id/${yearId}`)
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              const year = result.year;
+              document.getElementById("edit_year").value = year.year;
+              document.getElementById("edit-year_status").checked = year.year_status;
+              $("#editYearModal").modal("show");
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            Swal.fire({
+              icon: "error",
+              title: "ไม่สามารถดึงข้อมูลปีได้",
+            });
+          });
+
+        // เพิ่ม event listener สำหรับโมดัลแก้ไข
+        $("#editYearModal").on('shown.bs.modal', function () {
+          document.getElementById('edit_year').focus();
+        });
+      }
+      // End Edit Year
+
+      // Start Delete Year
+      function deleteYear(yearId) {
+        // console.log(agencyId);
+        Swal.fire({
+          title: "คุณต้องการลบปีนี้หรือไม่?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "ลบ",
+          cancelButtonText: "ยกเลิก",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            axios
+              .post(`/api/year/delete-year/${yearId}`)
+              .then((response) => {
+                const result = response.data;
+                if (result.status === "success") {
+                  Swal.fire({
+                    icon: "success",
+                    title: "ลบปีสำเร็จ",
+                    showConfirmButton: false,
+                    timer: 1500,
+                  });
+                  getYearReport();
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+                Swal.fire({
+                  icon: "error",
+                  title: "ลบปีไม่สำเร็จ",
+                });
+              });
+          }
+        });
+      }
+      // End Delete Year
+
+      // Start Update Year
+      function updateYear() {
+        const yearId = document.getElementById("_id").value;
+        const year = document.getElementById("edit_year").value;
+        const year_status = document.getElementById("edit-year_status").checked;
+        const payload = {
+          year: year,
+          year_status: year_status,
+        };
+
+        axios
+          .post(`/api/year/update-year/${yearId}`, payload)
+          console.log(payload)
+          // .then((response) => {
+          //   const result = response.data;
+          //   if (result.status === "success") {
+          //     Swal.fire({
+          //       icon: "success",
+          //       title: "แก้ไขปีสำเร็จ",
+          //       showConfirmButton: false,
+          //       timer: 1500,
+          //     });
+
+          //     // ปิด modal
+          //     $("#editYearModal").modal("hide");
+          //     // โหลดข้อมูลใหม่
+          //     getYearReport();
+          //   }
+          // })
+          // .catch((error) => {
+          //   console.log(error);
+          //   Swal.fire({
+          //     icon: "error",
+          //     title: "แก้ไขปีไม่สำเร็จ", 
+          //   });
+          // });
+      }
+      // End Update Year
+    </script>
+  </body>
+</html>

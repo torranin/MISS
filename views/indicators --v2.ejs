@@ -1,0 +1,625 @@
+<%- include('partials/header') %>
+
+<style>
+  /* เพิ่มความกว้างของ offcanvas ด้านขวา */
+  #detailOffcanvas {
+    width: 900px; /* หรือปรับตามที่คุณต้องการ เช่น 600px */
+  }
+  #saveValueOffcanvas {
+    width: 700px; /* หรือปรับตามที่คุณต้องการ เช่น 600px */
+  }
+</style>
+
+  <!-- Start เมนูสร้างเอกสาร -->
+  <div class="container-fluid mt-5">
+    <h1 class="text-center mb-4" style="font-weight: bold">
+      บันทึกค่าข้อมูลตัวชี้วัด
+    </h1>
+
+    <!-- เพิ่มช่องค้นหาเอกสารด้วยหมายเลขเอกสาร -->
+    <div class="row mb-4">
+      <div class="col-md-6 offset-md-3">
+          <div class="input-group">
+          <input
+                type="text"
+                class="form-control"
+                id="search-indicators"
+                placeholder="ค้นหาตัวชี้วัด"
+                aria-label="ค้นหาตัวชี้วัด"
+              />
+            <button class="btn btn-primary" type="button" id="search-button">
+              <i class="fa-solid fa-search"></i> ค้นหา
+            </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="indicators-report" class="indicators-list"></div>
+  </div>
+
+  <!-- <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasRightLabel">ข้อมูลตัวชี้วัด</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      ...
+    </div>
+  </div> -->
+
+
+  <!-- เรียกใช้ JavaScript libraries ตามลำดับ -->
+  <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    $(document).ready(function () {
+      // Check Token and Load Function
+      getToken();
+      // โหลดข้อมูลตัวชี้วัด
+      getIndicatorsReport();
+
+      // กำหนด active สำหรับเมนูด้านบน
+      const fullPath = window.location.pathname;
+      if (fullPath.includes("/dashboard")) {
+        document
+          .getElementById("dashboard")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("dashboard")
+          .classList.remove("btn-primary-outline");
+      } else if (fullPath.includes("/indicators")) {
+        document
+          .getElementById("indicators")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("indicators")
+          .classList.remove("btn-primary-outline");
+      }
+
+      // เพิ่ม Event Listener สำหรับการค้นหา
+      $("#search-button").click(function () {
+        searchIndicators();
+      });
+
+      // เพิ่ม Event Listener สำหรับการกด Enter ในช่องค้นหา
+      $("#search-indicators").keypress(function (e) {
+        if (e.which === 13) {
+          searchIndicators();
+        }
+      });
+    });
+
+    // Start Check if token is valid
+    function getToken() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/";
+        return;
+      }
+      
+      axios
+        .post("/api/auth/verify-user-by-token", {
+          token: token,
+        })
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            localStorage.setItem("userInfo", JSON.stringify(result.user));
+          } else {
+            window.location.href = "/";
+          }
+        })
+        .catch((error) => {
+          console.error("Token verification error:", error);
+          window.location.href = "/";
+        });
+    }
+    // End Check if token is valid
+
+    function logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userInfo");
+      window.location.href = "/";
+    }
+
+    function getIndicatorsReport() {
+      axios
+        .get("/api/indicators/get-indicators-report")
+        .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              const indicators = result.indicators;
+              displayIndicators(indicators);
+            }
+        })
+        .catch((error) => {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            title: "เกิดข้อผิดพลาด",
+            text: "ไม่สามารถโหลดข้อมูลตัวชี้วัดได้",
+            confirmButtonText: "ตกลง",
+          });
+        });
+    }
+
+    function displayIndicators(indicators) {
+        if (!indicators || indicators.length === 0) {
+          document.getElementById("indicators-report").innerHTML = `
+            <div class="alert alert-info text-center" role="alert">
+              ไม่พบข้อมูลตัวชี้วัด
+            </div>
+          `;
+          return;
+        }
+        
+        let reportHTML = "";
+
+        indicators.forEach((indicator) => {
+          // กำหนดสถานะ
+          const statusText = indicator.indicators_status ? 
+            '<span class="badge bg-success">เปิดใช้งาน</span>' : 
+            '<span class="badge bg-danger">ปิดใช้งาน</span>';
+            
+          reportHTML += `
+          <div class="document-card mb-3 p-3 border">
+              <div class="card-body p-0">
+                  <div class="row">
+                      <div class="col-md-9 document-header">
+                          <h5 class="card-title" style="font-weight: bold;"> ${indicator.indicators_code} : ${indicator.indicators_name}</h5>
+                      </div>
+                      <div class="col-md-3">
+                          <div class="row mt-2">
+                              <div class="col-md-12 text-end">
+                                  <button class="btn btn-info btn-sm me-2" type="button" id="detail-button" onclick="detailIndicators('${indicator._id}')" >
+                                    <i class="fa-solid fa-circle-info"></i> ข้อมูลตัวชี้วัด
+                                  </button>
+                                  <button class="btn btn-success btn-sm me-2" type="button" id="save-value-button" onclick="saveValueIndicators('${indicator._id}')" >
+                                    <i class="fa-solid fa-edit"></i> บันทึกข้อมูล
+                                  </button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          `;
+        });
+
+        document.getElementById("indicators-report").innerHTML = reportHTML;
+    }
+
+    function searchIndicators() {
+      const searchTerm = $("#search-indicators").val().trim();
+
+      if (searchTerm === "") {
+        // ถ้าช่องค้นหาว่างให้โหลดตัวชี้วัดทั้งหมด
+        getIndicatorsReport();
+        return;
+      }
+
+      axios
+        .get("/api/indicators/get-indicators-report")
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            const indicators = result.indicators;
+            // กรองตัวชี้วัดตามชื่อที่ค้นหา
+            const filteredIndicators = indicators.filter(
+              (indicator) =>
+                indicator.indicators_name
+                  .toLowerCase()
+                  .includes(searchTerm.toLowerCase()) ||
+                (indicator.indicators_description && 
+                 indicator.indicators_description
+                  .toLowerCase()
+                  .includes(searchTerm.toLowerCase()))
+            );
+
+            if (filteredIndicators.length === 0) {
+              Swal.fire({
+                icon: "info",
+                title: "ไม่พบตัวชี้วัด",
+                text: `ไม่พบตัวชี้วัดที่มีชื่อหรือคำอธิบายเกี่ยวกับ "${searchTerm}"`,
+                confirmButtonText: "ตกลง",
+              });
+              displayIndicators(indicators); // แสดงทั้งหมดถ้าไม่เจอ
+            } else {
+              displayIndicators(filteredIndicators);
+            }
+          }
+        })
+        .catch((error) => {
+          // console.log(error);
+          Swal.fire({
+            icon: "error",
+            title: "เกิดข้อผิดพลาด",
+            text: "ไม่สามารถค้นหาตัวชี้วัดได้",
+            confirmButtonText: "ตกลง",
+          });
+        });
+    }
+
+    function saveValueIndicators(id) {
+      axios
+        .get(`/api/indicators/get-indicator-by-id/${id}`)
+        .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+            const indicator = result.indicator;
+            displaySaveValue(indicator);
+            }
+        })
+        .catch((error) => {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            title: "เกิดข้อผิดพลาด",
+            text: "ไม่สามารถโหลดข้อมูลตัวชี้วัดได้",
+            confirmButtonText: "ตกลง",
+          });
+        });
+    }
+
+    function displaySaveValue(indicator) {
+      if (!indicator) {
+        Swal.fire({
+          icon: "error",
+          title: "ไม่พบข้อมูลตัวชี้วัด",
+          confirmButtonText: "ตกลง",
+        });
+        return;
+      }
+
+      // โหลดข้อมูลปี
+      axios.get('/api/year/get-year-report')
+        .then(response => {
+          if (response.data.status === 'success') {
+            const years = response.data.years;
+            const currentYear = new Date().getFullYear().toString();
+            const currentMonth = new Date().getMonth() + 1; // getMonth() returns 0-11
+            const currentDay = new Date().getDate();
+            
+            const offcanvasHTML = `
+              <div class="offcanvas offcanvas-end" tabindex="-1" id="saveValueOffcanvas" aria-labelledby="saveValueOffcanvasLabel">
+                <div class="offcanvas-header">
+                  <h5 class="offcanvas-title" id="saveValueOffcanvasLabel">${indicator.indicators_code} : ${indicator.indicators_name}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                  <form id="saveValueForm">
+                    <input type="hidden" id="indicator_id" value="${indicator._id}">
+                    <div class="mb-3">
+                      <label class="form-label">ตัวตั้ง : ${indicator.variable_name}</label>
+                      <input type="number" class="form-control" id="variable_value" step="any" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">ตัวหาร : ${indicator.divisor_name}</label>
+                      <input type="number" class="form-control" id="divisor_value" step="any" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">รายละเอียดช่วงเวลา</label>
+                      <div class="form-check">
+                        <input type="radio" class="form-check-input" name="time_period" id="time_period_shift" value="shift">
+                        <label class="form-check-label" for="time_period_shift">เวร</label>
+                      </div>
+                      <div class="form-check">
+                        <input type="radio" class="form-check-input" name="time_period" id="time_period_day" value="day">
+                        <label class="form-check-label" for="time_period_day">วัน</label>
+                      </div>
+                      <div class="form-check">
+                        <input type="radio" class="form-check-input" name="time_period" id="time_period_month" value="month">
+                        <label class="form-check-label" for="time_period_month">เดือน</label>
+                      </div>
+                    </div>  
+                    <div class="mb-3" id="shift_container" style="display: none;">
+                      <label class="form-label">เวร</label>
+                      <select class="form-control" id="shift">
+                          <option value="morning">เวรเช้า</option>
+                          <option value="afternoon">เวรบ่าย</option>
+                          <option value="night">เวรดึก</option>
+                      </select>
+                    </div>
+                    <div class="mb-3" id="day_container" style="display: none;">
+                      <label class="form-label">วันที่</label>
+                      <select class="form-control" id="day">
+                          ${Array.from({length: 31}, (_, i) => i + 1).map(day => 
+                            `<option value="${day}" ${day === currentDay ? 'selected' : ''}>${day}</option>`
+                          ).join('')}
+                      </select>
+                    </div>
+                    <div class="mb-3" id="month_container" style="display: none;">
+                      <label class="form-label">เดือน</label>
+                      <select class="form-control" id="month">
+                          <option value="1" ${currentMonth === 1 ? 'selected' : ''}>มกราคม</option>
+                          <option value="2" ${currentMonth === 2 ? 'selected' : ''}>กุมภาพันธ์</option>
+                          <option value="3" ${currentMonth === 3 ? 'selected' : ''}>มีนาคม</option>
+                          <option value="4" ${currentMonth === 4 ? 'selected' : ''}>เมษายน</option>
+                          <option value="5" ${currentMonth === 5 ? 'selected' : ''}>พฤษภาคม</option>
+                          <option value="6" ${currentMonth === 6 ? 'selected' : ''}>มิถุนายน</option>
+                          <option value="7" ${currentMonth === 7 ? 'selected' : ''}>กรกฎาคม</option>
+                          <option value="8" ${currentMonth === 8 ? 'selected' : ''}>สิงหาคม</option>
+                          <option value="9" ${currentMonth === 9 ? 'selected' : ''}>กันยายน</option>
+                          <option value="10" ${currentMonth === 10 ? 'selected' : ''}>ตุลาคม</option>
+                          <option value="11" ${currentMonth === 11 ? 'selected' : ''}>พฤศจิกายน</option>
+                          <option value="12" ${currentMonth === 12 ? 'selected' : ''}>ธันวาคม</option>
+                      </select>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">ปี</label>
+                      <select class="form-control" id="year" required>
+                        ${years.map(year => `
+                          <option value="${year.year}" ${year.year === currentYear ? 'selected' : ''}>
+                            ${year.year}
+                          </option>
+                        `).join('')}
+                      </select>
+                    </div>
+                    <div class="text-end">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="offcanvas">ยกเลิก</button>
+                      <button type="submit" class="btn btn-primary">บันทึก</button>
+                    </div>
+                  </form>
+                </div>
+            </div>
+          `;
+
+            // เพิ่ม offcanvas เข้าไปใน body
+            document.body.insertAdjacentHTML('beforeend', offcanvasHTML);
+
+            // เพิ่ม event listener สำหรับการคำนวณผลลัพธ์
+            const variableInput = document.getElementById('variable_value');
+            const divisorInput = document.getElementById('divisor_value');
+
+            function calculateResult() {
+              const variable = parseFloat(variableInput.value) || 0;
+              const divisor = parseFloat(divisorInput.value) || 0;
+              if (divisor !== 0) {
+                const result = (variable / divisor) * 100;
+                return result.toFixed(2) + '%';
+              }
+              return 'ไม่สามารถคำนวณได้';
+            }
+
+            // เพิ่ม event listener สำหรับ radio buttons
+            document.querySelectorAll('input[name="time_period"]').forEach(radio => {
+              radio.addEventListener('change', function() {
+                const shiftContainer = document.getElementById('shift_container');
+                const dayContainer = document.getElementById('day_container');
+                const monthContainer = document.getElementById('month_container');
+                
+                // ซ่อนทั้งหมดก่อน
+                shiftContainer.style.display = 'none';
+                dayContainer.style.display = 'none';
+                monthContainer.style.display = 'none';
+                
+                // แสดงตามที่เลือก
+                if (this.value === 'shift') {
+                  shiftContainer.style.display = 'block';
+                  dayContainer.style.display = 'block';
+                  monthContainer.style.display = 'block';
+                } else if (this.value === 'day') {
+                  dayContainer.style.display = 'block';
+                  monthContainer.style.display = 'block';
+                } else if (this.value === 'month') {
+                  monthContainer.style.display = 'block';
+                }
+              });
+            });
+
+            // เพิ่ม event listener สำหรับการบันทึกข้อมูล
+            document.getElementById('saveValueForm').addEventListener('submit', function(e) {
+              e.preventDefault();
+              
+              // ตรวจสอบว่าเลือก time_period หรือยัง
+              const timePeriod = document.querySelector('input[name="time_period"]:checked');
+              if (!timePeriod) {
+                Swal.fire({
+                  icon: 'warning',
+                  title: 'กรุณาเลือกรายละเอียด',
+                  text: 'กรุณาเลือก เวร/วัน/เดือน',
+                  confirmButtonText: 'ตกลง'
+                });
+          return;
+        }
+        
+              const payload = {
+                indicator_id: document.getElementById('indicator_id').value,
+                variable_value: parseFloat(variableInput.value),
+                divisor_value: parseFloat(divisorInput.value),
+                result: calculateResult(),
+                time_period: timePeriod.value,
+                year: document.getElementById('year').value
+              };
+
+              // เพิ่มข้อมูลตาม time_period ที่เลือก
+              if (timePeriod.value === 'shift') {
+                payload.shift = document.getElementById('shift').value;
+                payload.day = document.getElementById('day').value;
+                payload.month = document.getElementById('month').value;
+              } else if (timePeriod.value === 'day') {
+                payload.day = document.getElementById('day').value;
+                payload.month = document.getElementById('month').value;
+              } else if (timePeriod.value === 'month') {
+                payload.month = document.getElementById('month').value;
+              }
+
+              axios.post('/api/indicators/save-value', payload)
+                .then(response => {
+                  if (response.data.status === 'success') {
+                    Swal.fire({
+                      icon: 'success',
+                      title: 'บันทึกข้อมูลสำเร็จ',
+                      showConfirmButton: false,
+                      timer: 1500
+                    });
+                    // ปิด offcanvas
+                    const offcanvas = document.getElementById('saveValueOffcanvas');
+                    const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvas);
+                    bsOffcanvas.hide();
+                  }
+                })
+                .catch(error => {
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถบันทึกข้อมูลได้',
+                    confirmButtonText: 'ตกลง'
+                  });
+                });
+            });
+
+            // แสดง offcanvas
+            const offcanvas = new bootstrap.Offcanvas(document.getElementById('saveValueOffcanvas'));
+            offcanvas.show();
+            
+            // ลบ offcanvas เมื่อปิด
+            document.getElementById('saveValueOffcanvas').addEventListener('hidden.bs.offcanvas', function() {
+              this.remove();
+            });
+          }
+        })
+        .catch(error => {
+          Swal.fire({
+            icon: 'error',
+            title: 'เกิดข้อผิดพลาด',
+            text: 'ไม่สามารถโหลดข้อมูลปีได้',
+            confirmButtonText: 'ตกลง'
+          });
+        });
+    }
+
+    function detailIndicators(id) {
+      axios
+        .get(`/api/indicators/get-indicator-by-id/${id}`)
+        .then((response) => {
+          const result = response.data;
+          if (result.status === "success") {
+            const indicator = result.indicator;
+            displayDetailIndicators(indicator);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          Swal.fire({
+            icon: "error",
+            title: "เกิดข้อผิดพลาด",
+            text: "ไม่สามารถโหลดข้อมูลตัวชี้วัดได้",
+            confirmButtonText: "ตกลง",
+          });
+        });
+    }
+
+    function displayDetailIndicators(indicator) {
+      if (!indicator) {
+        Swal.fire({
+          icon: "error",
+          title: "ไม่พบข้อมูลตัวชี้วัด",
+          confirmButtonText: "ตกลง",
+        });
+        return;
+      }
+      // ถ้ามี group_id ให้ดึงข้อมูลกลุ่ม
+      if (indicator.group_id) {
+        axios.get(`/api/group/get-group-by-id/${indicator.group_id}`)
+          .then((response) => {
+            if (response.data.status === 'success') {
+              renderDetailOffcanvas(response.data.group);
+            } else {
+              renderDetailOffcanvas(null);
+            }
+          })
+          .catch(() => {
+            renderDetailOffcanvas(null);
+          });
+      } else {
+        renderDetailOffcanvas(null);
+      }
+
+      // ฟังก์ชันสำหรับแสดงผล (รับ group เป็น argument)
+      function renderDetailOffcanvas(group) {
+        const groupName = group ? `<h5 class="card-title">ผู้รับผิดชอบ : ${group.group_name}</h5>` : '';
+        const groupType = group ? `<h5 class="card-title">ตัวชี้วัด : ${group.group_type}</h5>` : '';
+        const offcanvasHTML = `
+          <div class="offcanvas offcanvas-end" tabindex="-1" id="detailOffcanvas" aria-labelledby="detailOffcanvasLabel">
+            <div class="offcanvas-header">
+              <h5 class="offcanvas-title" id="detailOffcanvasLabel">${indicator.indicators_code} : ${indicator.indicators_name}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+              <div class="row mt-3">
+                <div class="col-md-12">
+                  <div class="card">
+                    <div class="card-body">
+                      <h5 class="card-title">รหัสตัวชี้วัด : ${indicator.indicators_code}</h5>
+                      <h5 class="card-title">ชื่อตัวชี้วัด  : ${indicator.indicators_name}</h5>
+                      ${groupType}
+                      ${groupName}
+                      <h5 class="card-title">ปี  : ${indicator.year}</h5>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row mt-3">
+                <div class="col-md-12">
+                  <div class="card">
+                    <div class="card-body">
+                      <h5 class="card-title">คำอธิบาย</h5>
+                      <p class="card-text">${indicator.indicators_description || 'ไม่มีคำอธิบาย'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+               <div class="row mt-3">
+                <div class="col-md-12">
+                  <div class="card">
+                    <div class="card-body">
+                      <h5 class="card-title">ตัวตั้ง</h5>
+                      <p class="card-text">${indicator.variable_name}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mt-3">
+                <div class="col-md-12">
+                  <div class="card">
+                    <div class="card-body">
+                      <h5 class="card-title">ตัวหาร</h5>
+                      <p class="card-text">${indicator.divisor_name}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+        // เพิ่ม offcanvas เข้าไปใน body
+        document.body.insertAdjacentHTML('beforeend', offcanvasHTML);
+        // แสดง offcanvas
+        const offcanvas = new bootstrap.Offcanvas(document.getElementById('detailOffcanvas'));
+        offcanvas.show();
+        // ลบ offcanvas เมื่อปิด
+        document.getElementById('detailOffcanvas').addEventListener('hidden.bs.offcanvas', function() {
+          this.remove();
+        });
+      }
+    }
+
+
+    function redirectToLink(link) {
+      window.location.href = link;
+    }
+
+  </script>
+</body>
+
+</html>

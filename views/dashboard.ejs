@@ -1,0 +1,97 @@
+<%- include('partials/header') %>
+    <!-- Start เครื่องมือสร้างเอกสาร -->
+    <div
+      class="container d-flex align-items-center justify-content-center mt-5"
+    >
+      <div class="card border-0" style="width: 100%; max-width: 500px">
+        <div class="card-body">
+          <h1 class="text-center mb-4" style="font-weight: bold">Dashboard</h1>
+        </div>
+      </div>
+    </div>
+    <!-- End เครื่องมือสร้างเอกสาร -->
+
+    <!-- เรียกใช้ JavaScript libraries ตามลำดับ -->
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      // เริ่มต้น DataTable หลังจากที่เอกสาร HTML โหลดเสร็จสมบูรณ์
+      $(document).ready(function () {       
+         getToken();
+        // กำหนด active สำหรับเมนูด้านบน
+        const fullPath = window.location.pathname;
+        if (fullPath.includes("/dashboard")) {
+          document
+            .getElementById("dashboard")
+            .classList.add("active", "btn-primary");
+          document
+            .getElementById("dashboard")
+            .classList.remove("btn-primary-outline");
+        }
+      });
+
+      function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userInfo");
+        window.location.href = "/";
+      }
+
+      // Start Check if token is valid
+      function getToken() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/";
+        } else {
+          axios
+            .post("/api/auth/verify-user-by-token", {
+              token: token,
+            })
+            .then((response) => {
+              const result = response.data;
+              if (result.status === "success") {
+                localStorage.setItem("userInfo", JSON.stringify(result.user));
+                // ทำอย่างอื่นหลังจากตรวจสอบโทเค็น
+              }
+            })
+            .catch((error) => {
+              window.location.href = "/";
+            });
+        }
+      }
+      // End Check if token is valid
+
+      // function formatDate(date) {
+      //   const d = new Date(date);
+      //   const datePart = d.toLocaleDateString("th-TH", {
+      //     year: "numeric",
+      //     month: "long",
+      //     day: "numeric",
+      //   });
+      //   const timePart = d.toLocaleTimeString("th-TH", {
+      //     hour: "2-digit",
+      //     minute: "2-digit",
+      //     hour12: false,
+      //   });
+      //   return `${datePart} `;
+      // }
+      // function formatShortDate(date) {
+      //   const d = new Date(date);
+      //   const datePart = d.toLocaleDateString("th-TH", {
+      //     year: "numeric",
+      //     month: "short",
+      //     day: "numeric",
+      //   });
+      //   return `${datePart} `;
+      // }
+
+      function redirectToLink(link) {
+        window.location.href = link;
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,583 @@
+<%- include('partials/header') %>
+
+    <!-- Start ตารางข้อมูลผู้ใช้งาน -->
+    <div class="container mt-5">
+      <div class="card border-0" style="width: 100%">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-4" style="font-weight: bold">ตารางข้อมูลผู้ใช้งาน</h3>
+            <div class="d-flex justify-content-end mb-3">
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#createUserModal"
+              >
+                สร้างผู้ใช้งาน
+              </button>
+            </div>
+          </div>
+          <br />
+          <table class="table" id="users-table">
+            <thead>
+              <tr>
+                <th>ชื่อ - นามสกุล</th>
+                <th>อีเมล</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- End ตารางข้อมูลผู้ใช้งาน -->
+
+    <!-- Start Modal สร้างผู้ใช้งาน -->
+    <div
+      class="modal fade"
+      id="createUserModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="createUserModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="createUserModalLabel">
+              <span id="modalTitle">สร้างผู้ใช้งาน</span>
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group mb-3">
+              <label for="fullname" class="form-label" style="font-weight: bold"
+                >ชื่อ - นามสกุล</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="fullname"
+                placeholder="กรุณากรอกชื่อ - นามสกุล"
+              />
+            </div>
+            <div class="form-group mb-3">
+              <label for="cid" class="form-label" style="font-weight: bold"
+                >เลขบัตรประชาชน</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="cid"
+                placeholder="กรุณาเลขบัตรประชาชน"
+              />
+            </div>
+            <div class="form-group mb-3">
+              <label for="job_position" class="form-label" style="font-weight: bold"
+                >ตำแหน่ง</label
+              >
+              <select class="form-select" aria-label="Default select example" id="job_position">
+                <option selected>กรุณาเลือกตำแหน่ง</option>
+                <option value="Ward">Ward</option>
+                <option value="card">ห้องบัตร</option>
+                <option value="record">เวชระเบียน</option>
+                <option value="admin">ผู้ดูแลระบบ</option>
+              </select>
+            </div>
+            <div class="form-group mb-3">
+              <label for="email" class="form-label" style="font-weight: bold"
+                >อีเมล</label
+              >
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                placeholder="กรุณากรอกอีเมล"
+              />
+            </div>
+            <div class="form-group mb-3">
+              <label for="password" class="form-label" style="font-weight: bold"
+                >รหัสผ่าน</label
+              >
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                placeholder="กรุณากรอกรหัสผ่าน"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="createUser()"
+            >
+              สร้างผู้ใช้งาน
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              ยกเลิก
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Modal สร้างผู้ใช้งาน -->
+
+    <!-- Start Modal แก้ไขผู้ใช้งาน -->
+    <div
+      class="modal fade"
+      id="editUserModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="editUserModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="editUserModalLabel">
+              <span id="modalTitle">แก้ไขผู้ใช้งาน</span>
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input
+              type="hidden"
+              class="form-control"
+              id="edit-user-id"
+              placeholder="กรุณากรอกชื่อ - นามสกุล"
+            />
+            <div class="form-group mb-3">
+              <label for="fullname" class="form-label" style="font-weight: bold"
+                >ชื่อ - นามสกุล</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="edit-fullname"
+                placeholder="กรุณากรอกชื่อ - นามสกุล"
+              />
+            </div>
+            <div class="form-group mb-3">
+              <label for="email" class="form-label" style="font-weight: bold"
+                >อีเมล</label
+              >
+              <input
+                type="email"
+                class="form-control"
+                id="edit-email"
+                placeholder="กรุณากรอกอีเมล"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-success"
+              onclick="handleConfirmEditUser()"
+            >
+              ดำเนินการ
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              ยกเลิก
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Modal แก้ไขผู้ใช้งาน -->
+
+    <!-- Start Modal เปลี่ยนรหัสผ่าน -->
+    <div
+      class="modal fade"
+      id="editPasswordModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="editPasswordModalLabel"
+      aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="editPasswordModalLabel">
+            <span id="modalTitle">เปลี่ยนรหัสผ่าน</span>
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <input
+            type="hidden"
+            class="form-control"
+            id="edit-user-id"
+            placeholder="กรุณากรอกชื่อ - นามสกุล"
+          />
+          <div class="form-group mb-3">
+            <label for="password" class="form-label" style="font-weight: bold"
+              >รหัสผ่านใหม่</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="edit-password"
+              placeholder="กรุณากรอกรหัสผ่าน"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+              type="button"
+              class="btn btn-success"
+              onclick="handleConfirmEditPassword()"
+            >
+              ดำเนินการ
+            </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            ยกเลิก
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- End Modal เปลี่ยนรหัสผ่าน -->
+
+    <!-- เรียกใช้ JavaScript libraries ตามลำดับ -->
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      // สร้างตัวแปรสำหรับเก็บ DataTable
+      let documentsTable;
+
+      // เริ่มต้น DataTable หลังจากที่เอกสาร HTML โหลดเสร็จสมบูรณ์
+      $(document).ready(function () {
+        // console.log("jQuery loaded:", typeof $ !== "undefined");
+        // console.log("DataTable loaded:", typeof $.fn.DataTable !== "undefined");
+
+        // กำหนด active สำหรับเมนูด้านบน
+      const fullPath = window.location.pathname;
+      if (fullPath.includes("/dashboard")) {
+        document
+          .getElementById("dashboard")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("dashboard")
+          .classList.remove("btn-primary-outline");
+      } else if (fullPath.includes("/user")) {
+        document
+          .getElementById("Set up")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("Set up")
+          .classList.remove("btn-primary-outline");
+      }
+
+        try {
+          // เริ่มต้น DataTable
+          usersTable = $("#users-table").DataTable({
+            // กำหนดการตั้งค่า DataTable ที่นี่
+            language: {
+              search: "ค้นหา:",
+              lengthMenu: "แสดง _MENU_ รายการ",
+              info: "แสดง _START_ ถึง _END_ จาก _TOTAL_ รายการ",
+              infoEmpty: "แสดง 0 ถึง 0 จาก 0 รายการ",
+              infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
+              paginate: {
+                first: "หน้าแรก",
+                last: "หน้าสุดท้าย",
+                next: "ถัดไป",
+                previous: "ก่อนหน้า",
+              },
+            },
+            responsive: true,
+            order: [[2, "desc"]],
+          });
+
+          console.log("DataTable initialized successfully");
+        } catch (error) {
+          console.error("Failed to initialize DataTable:", error);
+        }
+
+        // Check Token and Load Function
+        getToken();
+      });
+
+      // Start Check if token is valid
+      function getToken() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/";
+        } else {
+          axios
+            .post("/api/auth/verify-user-by-token", {
+              token: token,
+            })
+            .then((response) => {
+              const result = response.data;
+              if (result.status === "success") {
+                localStorage.setItem("userInfo", JSON.stringify(result.user));
+                getUsers(); // เรียกใช้ฟังก์ชันโหลดผู้ใช้งาน
+              }
+            })
+            .catch((error) => {
+              window.location.href = "/";
+            });
+        }
+      }
+      // End Check if token is valid
+
+      function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userInfo");
+        window.location.href = "/";
+      }
+
+      function clearForm() {
+        document.getElementById("fullname").value = "";
+        document.getElementById("cid").value = "";
+        document.getElementById("job_position").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("password").value = "";
+      }
+
+      function createUser() {
+        axios
+          .post("/api/auth/register", {
+            fullname: document.getElementById("fullname").value,
+            cid: document.getElementById("cid").value,
+            job_position: document.getElementById("job_position").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+          })
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                title: "ผู้ใช้งานถูกสร้างเรียบร้อย",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+
+              getUsers();
+              $("#createUserModal").modal("hide");
+              clearForm();
+            } else {
+              Swal.fire({
+                position: "center",
+                icon: "error",
+                title: "ผู้ใช้งานมีอยู่ในระบบแล้ว",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      function handleKeyPress(event) {
+        if (event.key === "Enter") {
+          createDocument(); // เรียกใช้ฟังก์ชันสร้างเอกสารเมื่อกด Enter
+        }
+      }
+
+      function getUsers() {
+        axios
+          .get("/api/user/get-users")
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success" && usersTable) {
+              const users = result.users;
+              usersTable.clear(); // Clear existing data
+
+              if (users.length === 0) {
+                usersTable.draw(); // Redraw the empty table
+                return;
+              }
+
+              users.forEach((user) => {
+                usersTable.row.add([
+                  user.fullname,
+                  user.email,
+                  `<center>
+                  <button class="btn btn-warning btn-sm" onclick="onEditUser('${user._id}')">
+                    <i class="fa-solid fa-pen-to-square" ></i>
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="onEditPassword('${user._id}')">
+                    <i class="fa-solid fa-key" ></i>
+                  </button>
+                  </center>`,
+                ]);
+              });
+
+              usersTable.draw(); // Redraw once all rows are added
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      function onEditUser(user_id) {
+        axios
+          .post("/api/user/get-user-by-id", {
+            user_id: user_id,
+          })
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              const user = result.user;
+              document.getElementById("edit-user-id").value = user._id;
+              document.getElementById("edit-fullname").value = user.fullname;
+              document.getElementById("edit-email").value = user.email;
+              $("#editUserModal").modal("show");
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      function handleConfirmEditUser() {
+        const user_id = document.getElementById("edit-user-id").value;
+        const fullname = document.getElementById("edit-fullname").value;
+        const email = document.getElementById("edit-email").value;
+
+        axios
+          .post("/api/user/update-user", {
+            user_id: user_id,
+            fullname: fullname,
+            email: email,
+          })
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                title: "ดำเนินการแก้ไขผู้ใช้งานเรียบร้อย",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+
+              getUsers();
+              $("#editUserModal").modal("hide");
+            } else {
+              Swal.fire({
+                position: "center",
+                icon: "error",
+                title: "ดำเนินการแก้ไขผู้ใช้งานไม่สำเร็จ",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+            }
+          });
+      }
+
+      function onEditPassword(user_id) {
+        axios
+          .post("/api/user/get-user-by-id", {
+            user_id: user_id,
+          })
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              const user = result.user;
+              document.getElementById("edit-user-id").value = user._id;
+              $("#editPasswordModal").modal("show");
+            }
+          });
+      }
+
+      function handleConfirmEditPassword() {
+        const user_id = document.getElementById("edit-user-id").value;
+        const password = document.getElementById("edit-password").value;
+
+        axios
+          .post("/api/user/update-password", {
+            user_id: user_id,
+            password: password,
+          })
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                title: "ดำเนินการเปลี่ยนรหัสผ่านเรียบร้อย",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+
+              getUsers();
+              $("#editPasswordModal").modal("hide");
+            } else {
+              Swal.fire({
+                position: "center",
+                icon: "error",
+                title: "ดำเนินการเปลี่ยนรหัสผ่านไม่สำเร็จ",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+            }
+          });
+      }
+
+      function formatDate(date) {
+        const d = new Date(date);
+        const datePart = d.toLocaleDateString("th-TH", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        });
+        const timePart = d.toLocaleTimeString("th-TH", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+        return `${datePart} เวลา ${timePart}`;
+      }
+
+      function redirectToLink(link) {
+        window.location.href = link;
+      }
+    </script>
+  </body>
+</html>

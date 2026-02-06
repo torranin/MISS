@@ -1,0 +1,443 @@
+<%- include('partials/header') %>
+
+    <!-- Start ตารางข้อมูลกลุ่มงาน -->
+    <div class="container mt-5">
+      <div class="card border-0" style="width: 100%">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-4" style="font-weight: bold">ตารางข้อมูลกลุ่มงาน</h3>
+            <div class="d-flex justify-content-end mb-3">
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#createWorkGroupModal"
+              >
+                สร้างกลุ่มงาน
+              </button>
+            </div>
+          </div>
+          <br />
+          <table class="table" id="work-group-table">
+            <thead>
+              <tr>
+                <th>ชื่อกลุ่มงาน</th>
+                <th>คำอธิบาย</th>
+                <th>สถานะ</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- End ตารางข้อมูลกลุ่มงาน -->
+
+    <!-- Start Modal สร้างกลุ่มงาน -->
+    <div
+      class="modal fade"
+      id="createWorkGroupModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="createWorkGroupModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="createWorkGroupModalLabel">
+              <span id="modalTitle">สร้างกลุ่มงาน</span>
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group mb-3">
+              <label for="work_group_name" class="form-label" style="font-weight: bold"
+                >ชื่อกลุ่มงาน</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="work_group_name"
+                placeholder="กรุณากรอกชื่อกลุ่มงาน"
+              />
+            </div>
+            <div class="form-group mb-3">
+              <label for="work_group_description" class="form-label" style="font-weight: bold"
+                >คำอธิบาย</label
+              >
+              <textarea
+                class="form-control"
+                id="work_group_description"
+                placeholder="กรุณากรอกคำอธิบาย"
+                rows="2"
+              ></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="createWorkGroup()"
+            >
+              สร้างกลุ่มงาน
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              ยกเลิก
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Modal สร้างกลุ่มงาน -->
+
+    <!-- Start Modal แก้ไขกลุ่มงาน -->
+    <div
+      class="modal fade"
+      id="editWorkGroupModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="editWorkGroupModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="editWorkGroupModalLabel">
+              <span id="modalTitle">แก้ไขกลุ่มงาน ${work_group_name}</span>
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input
+              type="hidden"
+              class="form-control"
+              id="edit-work-group-id"
+            />
+            <div class="form-group mb-3">
+              <label for="work_group_name" class="form-label" style="font-weight: bold"
+                >ชื่อกลุ่มงาน</label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="edit-work_group_name"
+                placeholder="กรุณากรอกชื่อกลุ่มงาน"
+              />
+            </div>
+            <div class="form-group mb-3">
+              <label for="work_group_description" class="form-label" style="font-weight: bold"
+                >คำอธิบาย</label
+              >
+              <textarea
+                class="form-control"
+                id="edit-work_group_description"
+                placeholder="กรุณากรอกคำอธิบาย"
+                rows="2"
+              ></textarea>
+            </div>
+            <div class="form-group mb-3">
+              <div class="form-check form-switch">
+                <label class="form-check-label" for="edit-work_group_status" style="font-weight: bold">เปิด/ปิดกลุ่มงาน</label>
+                <input class="form-check-input" type="checkbox" role="switch" id="edit-work_group_status" ${work_group_status === true ? 'checked' : ''}>
+              </div>
+            </div>
+        </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="handleConfirmEditWorkGroup()"
+            >
+              บันทึกการแก้ไข
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              ยกเลิก
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Modal แก้ไขกลุ่มงาน -->
+
+    <!-- เรียกใช้ JavaScript libraries ตามลำดับ -->
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+
+      $(document).ready(function () {
+        getToken();
+
+        // กำหนด active สำหรับเมนูด้านบน
+      const fullPath = window.location.pathname;
+      if (fullPath.includes("/dashboard")) {
+        document
+          .getElementById("dashboard")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("dashboard")
+          .classList.remove("btn-primary-outline");
+      } else if (fullPath.includes("/work-group")) {
+        document
+          .getElementById("Set up")
+          .classList.add("active", "btn-primary");
+        document
+          .getElementById("Set up")
+          .classList.remove("btn-primary-outline");
+      }
+
+        try {
+          workGroupTable = $("#work-group-table").DataTable({
+            language: {
+              search: "ค้นหา:",
+              lengthMenu: "แสดง _MENU_ รายการ",
+              info: "แสดง _START_ ถึง _END_ จาก _TOTAL_ รายการ",
+              infoEmpty: "แสดง 0 ถึง 0 จาก 0 รายการ",
+              infoFiltered: "(กรองจากทั้งหมด _MAX_ รายการ)",
+              paginate: {
+                first: "หน้าแรก",
+                last: "หน้าสุดท้าย",
+                next: "ถัดไป",
+                previous: "ก่อนหน้า",
+              },
+            },
+            responsive: true,
+            order: [[2, "desc"]],
+          });
+
+          console.log("DataTable initialized successfully");
+        } catch (error) {
+          console.error("Failed to initialize DataTable:", error);
+        }
+      });
+
+      // Start Check if token is valid
+    function getToken() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/";
+      } else {
+        axios
+          .post("/api/auth/verify-user-by-token", {
+            token: token,
+          })
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              localStorage.setItem("userInfo", JSON.stringify(result.user));
+              getWorkGroupReport(); // เรียกใช้ฟังก์ชันโหลดเอกสาร
+            }
+          })
+          .catch((error) => {
+            window.location.href = "/";
+          });
+      }
+    }
+    // End Check if token is valid
+
+      function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userInfo");
+        window.location.href = "/";
+      }
+
+      function clearForm() {
+        document.getElementById("work_group_name").value = "";
+        document.getElementById("work_group_description").value = "";
+      }
+
+      function createWorkGroup() {
+        axios
+          .post("/api/work-group/create-work-group", {
+            work_group_name: document.getElementById("work_group_name").value,
+            work_group_description: document.getElementById("work_group_description").value,
+          })
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                title: "กลุ่มงานถูกสร้างเรียบร้อย",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+              getWorkGroupReport();
+              $("#createWorkGroupModal").modal("hide");
+              clearForm();
+            } else {
+              Swal.fire({
+                position: "center",
+                icon: "error",
+                title: "กลุ่มงานมีอยู่ในระบบแล้ว",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      function handleKeyPress(event) {
+        if (event.key === "Enter") {
+          createDocument(); // เรียกใช้ฟังก์ชันสร้างเอกสารเมื่อกด Enter
+        }
+      }
+
+      function getWorkGroupReport() {
+        axios
+          .get("/api/work-group/get-work-group-report")
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success" && workGroupTable) {
+              const workGroups = result.workGroups;
+              workGroupTable.clear(); // Clear existing data
+
+              if (workGroups.length === 0) {
+                workGroupTable.draw(); // Redraw the empty table
+                return;
+              }
+
+              workGroups.forEach((workGroup) => {
+                workGroupTable.row.add([
+                  workGroup.work_group_name,
+                  workGroup.work_group_description,
+                  workGroup.work_group_status === true ? '<span class="badge bg-success">เปิดใช้งาน</span>' : '<span class="badge bg-danger">ปิดใช้งาน</span>',
+                  `<center>
+                  <button class="btn btn-warning btn-sm" onclick="onEditWorkGroup('${workGroup._id}')">
+                    <i class="fa-solid fa-pen-to-square" ></i>
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="handleConfirmDeleteWorkGroup('${workGroup._id}')">
+                    <i class="fa-solid fa-trash" ></i>
+                  </button>
+                  </center>`,
+                ]);
+              });
+
+              workGroupTable.draw(); // Redraw once all rows are added
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      function onEditWorkGroup(work_group_id) {
+        axios
+          .get(`/api/work-group/get-work-group-by-id/${work_group_id}`)
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              const workGroup = result.workGroup;
+              document.getElementById("edit-work-group-id").value = workGroup._id;
+              document.getElementById("edit-work_group_name").value = workGroup.work_group_name;
+              document.getElementById("edit-work_group_description").value = workGroup.work_group_description;
+              document.getElementById("edit-work_group_status").checked = workGroup.work_group_status;
+              $("#editWorkGroupModal").modal("show");
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+
+      function handleConfirmEditWorkGroup() {
+        const work_group_id = document.getElementById("edit-work-group-id").value;
+        const work_group_name = document.getElementById("edit-work_group_name").value;
+        const work_group_description = document.getElementById("edit-work_group_description").value;
+        const work_group_status = document.getElementById("edit-work_group_status").checked;
+
+        axios
+          .post(`/api/work-group/update-work-group/${work_group_id}`, {
+            work_group_name: work_group_name,
+            work_group_description: work_group_description,
+            work_group_status: work_group_status,
+          })
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                title: "ดำเนินการแก้ไขกลุ่มงานเรียบร้อย",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+
+              getWorkGroupReport();
+              $("#editWorkGroupModal").modal("hide");
+            } else {
+              Swal.fire({
+                position: "center",
+                icon: "error",
+                title: "ดำเนินการแก้ไขกลุ่มงานไม่สำเร็จ",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+            }
+          });
+      }
+
+      function handleConfirmDeleteWorkGroup(work_group_id) {
+        axios
+          .post(`/api/work-group/delete-work-group/${work_group_id}`)
+          .then((response) => {
+            const result = response.data;
+            if (result.status === "success") {
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                title: "ดำเนินการลบกลุ่มงานเรียบร้อย",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+
+              getWorkGroupReport();
+              $("#editWorkGroupModal").modal("hide");
+            } else {
+              Swal.fire({
+                position: "center",
+                icon: "error",
+                title: "ดำเนินการลบกลุ่มงานไม่สำเร็จ",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+            }
+          });
+      }
+
+      function redirectToLink(link) {
+      window.location.href = link;
+    }
+      
+    </script>
+  </body>
+</html>
